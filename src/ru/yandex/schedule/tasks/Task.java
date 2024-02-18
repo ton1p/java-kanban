@@ -1,3 +1,5 @@
+package ru.yandex.schedule.tasks;
+
 import java.util.Objects;
 import java.util.UUID;
 
@@ -36,5 +38,15 @@ public class Task {
     @Override
     public int hashCode() {
         return Objects.hash(name, description, id, status);
+    }
+
+    @Override
+    public String toString() {
+        return "Task{" +
+                "name='" + name + '\'' +
+                ", description='" + description + '\'' +
+                ", id='" + id + '\'' +
+                ", status=" + status +
+                '}';
     }
 }
