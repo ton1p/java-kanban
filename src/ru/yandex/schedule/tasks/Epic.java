@@ -22,8 +22,11 @@ public class Epic extends Task {
     }
 
     public void removeSubTask(SubTask subTask) {
-        this.subTasks.remove(subTask);
-        this.status = this.computeStatus();
+        int index = this.subTasks.indexOf(subTask);
+        if (index != -1) {
+            this.subTasks.remove(index);
+            this.status = this.computeStatus();
+        }
     }
 
     public boolean updateSubTask(SubTask subTask) {
@@ -69,7 +72,7 @@ public class Epic extends Task {
         }
 
         if (newSize == subTasks.size()) {
-            return  Status.NEW;
+            return Status.NEW;
         }
 
         return Status.IN_PROGRESS;
@@ -80,6 +83,8 @@ public class Epic extends Task {
         return "Epic{" +
                 "subTasksSize=" + subTasks.size() +
                 ", status=" + status +
+                ", name='" + name + '\'' +
+                ", description='" + description + '\'' +
                 '}';
     }
 }

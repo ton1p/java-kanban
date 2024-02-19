@@ -81,14 +81,12 @@ public class TaskManager {
         }
     }
 
-    public void updateEpic(String id, String name, String description) {
-        Epic epic = epicHashMap.get(id);
-        if (epic != null) {
-            epic.name = name;
-            epic.description = description;
-            if (epicHashMap.containsKey(id)) {
-                epicHashMap.put(id, epic);
-            }
+    public void updateEpic(Epic epic) {
+        Epic epicFound = epicHashMap.get(epic.getId());
+        if (epicFound != null) {
+            epicFound.name = epic.name;
+            epicFound.description = epic.description;
+            epicHashMap.put(epicFound.getId(), epicFound);
         }
     }
 
@@ -111,14 +109,21 @@ public class TaskManager {
     public void removeEpic(String id) {
         Epic epic = epicHashMap.get(id);
         if (epic != null) {
-            epic.getSubTasks().forEach((s) -> this.removeSubTask(s.getId()));
+            epic.getSubTasks().forEach((s) -> subTaskHashMap.remove(s.getId()));
             epic.clearSubTasks();
             epicHashMap.remove(id);
         }
     }
 
     public void removeSubTask(String id) {
-        subTaskHashMap.remove(id);
+        SubTask subTask = subTaskHashMap.get(id);
+        if (subTask != null) {
+            Epic epic = epicHashMap.get(subTask.epicId);
+            if (epic != null) {
+                epic.removeSubTask(subTask);
+            }
+            subTaskHashMap.remove(id);
+        }
     }
 
     public ArrayList<SubTask> getEpicSubTasks(String epicId) {

@@ -10,7 +10,7 @@ public class Task {
 
     private String id;
 
-    protected Status status;
+    public Status status;
 
     public Task(String name, String description, Status status) {
         this.name = name;
