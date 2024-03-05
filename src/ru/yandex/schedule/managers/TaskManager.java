@@ -5,14 +5,14 @@ import ru.yandex.schedule.tasks.SubTask;
 import ru.yandex.schedule.tasks.Task;
 import ru.yandex.schedule.tasks.TaskType;
 
-import java.util.ArrayList;
+import java.util.List;
 
 public interface TaskManager {
-    ArrayList<Task> getTasksList();
+    List<Task> getTasksList();
 
-    ArrayList<Epic> getEpicsList();
+    List<Epic> getEpicsList();
 
-    ArrayList<SubTask> getSubTasksList();
+    List<SubTask> getSubTasksList();
 
     void removeAllTaskByType(TaskType taskType);
 
@@ -40,7 +40,7 @@ public interface TaskManager {
 
     void removeSubTask(String id);
 
-    ArrayList<SubTask> getEpicSubTasks(String epicId);
+    List<SubTask> getEpicSubTasks(String epicId);
 
-    ArrayList<Task> getHistory();
+    List<Task> getHistory();
 }

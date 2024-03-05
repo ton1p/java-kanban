@@ -7,6 +7,7 @@ import ru.yandex.schedule.tasks.TaskType;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 
 public class InMemoryTaskManager implements TaskManager {
     private final HashMap<String, Task> taskHashMap;
@@ -25,17 +26,17 @@ public class InMemoryTaskManager implements TaskManager {
     }
 
     @Override
-    public ArrayList<Task> getTasksList() {
+    public List<Task> getTasksList() {
         return new ArrayList<>(taskHashMap.values());
     }
 
     @Override
-    public ArrayList<Epic> getEpicsList() {
+    public List<Epic> getEpicsList() {
         return new ArrayList<>(epicHashMap.values());
     }
 
     @Override
-    public ArrayList<SubTask> getSubTasksList() {
+    public List<SubTask> getSubTasksList() {
         return new ArrayList<>(subTaskHashMap.values());
     }
 
@@ -105,15 +106,15 @@ public class InMemoryTaskManager implements TaskManager {
     public void updateEpic(Epic epic) {
         Epic epicFound = epicHashMap.get(epic.getId());
         if (epicFound != null) {
-            epicFound.name = epic.name;
-            epicFound.description = epic.description;
+            epicFound.setName(epic.getName());
+            epicFound.setDescription(epicFound.getDescription());
             epicHashMap.put(epicFound.getId(), epicFound);
         }
     }
 
     @Override
     public void updateSubTask(SubTask subTask) {
-        Epic epic = epicHashMap.get(subTask.epicId);
+        Epic epic = epicHashMap.get(subTask.getEpicId());
         if (epic != null) {
             boolean isUpdated = epic.updateSubTask(subTask);
             if (isUpdated) {
@@ -143,7 +144,7 @@ public class InMemoryTaskManager implements TaskManager {
     public void removeSubTask(String id) {
         SubTask subTask = subTaskHashMap.get(id);
         if (subTask != null) {
-            Epic epic = epicHashMap.get(subTask.epicId);
+            Epic epic = epicHashMap.get(subTask.getEpicId());
             if (epic != null) {
                 epic.removeSubTask(subTask);
             }
@@ -152,12 +153,12 @@ public class InMemoryTaskManager implements TaskManager {
     }
 
     @Override
-    public ArrayList<SubTask> getEpicSubTasks(String epicId) {
+    public List<SubTask> getEpicSubTasks(String epicId) {
         return epicHashMap.get(epicId).getSubTasks();
     }
 
     @Override
-    public ArrayList<Task> getHistory() {
+    public List<Task> getHistory() {
         return historyManager.getHistory();
     }
 }

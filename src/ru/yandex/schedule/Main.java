@@ -46,8 +46,8 @@ public class Main {
 
         printAllTasks(taskManager);
 
-        task.status = Status.IN_PROGRESS;
-        task1.description = "Обновил описание";
+        task.setStatus(Status.IN_PROGRESS);
+        task1.setDescription("Обновил описание");
         taskManager.updateTask(task);
         taskManager.getTaskById(task.getId());
         taskManager.updateTask(task1);
@@ -55,21 +55,21 @@ public class Main {
 
         printAllTasks(taskManager);
 
-        epic.name = "Обновил название эпика";
-        epic.description = "Обновил описание эпика";
+        epic.setName("Обновил название эпика");
+        epic.setDescription("Обновил описание эпика");
         taskManager.updateEpic(epic);
         taskManager.getEpicById(epic.getId());
 
         printAllTasks(taskManager);
 
-        subTask.status = Status.IN_PROGRESS;
+        subTask.setStatus(Status.IN_PROGRESS);
         taskManager.updateSubTask(subTask);
         taskManager.getSubTaskById(subTask.getId());
 
         printAllTasks(taskManager);
 
-        subTask.status = Status.DONE;
-        subTask1.status = Status.DONE;
+        subTask.setStatus(Status.DONE);
+        subTask1.setStatus(Status.DONE);
         taskManager.updateSubTask(subTask);
         taskManager.getSubTaskById(subTask.getId());
         taskManager.updateSubTask(subTask1);

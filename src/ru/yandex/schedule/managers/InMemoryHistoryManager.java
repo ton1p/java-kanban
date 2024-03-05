@@ -2,29 +2,26 @@ package ru.yandex.schedule.managers;
 
 import ru.yandex.schedule.tasks.Task;
 
-import java.util.ArrayList;
+import java.util.LinkedList;
+import java.util.List;
 
 public class InMemoryHistoryManager implements HistoryManager {
-    private final ArrayList<Task> history;
+    private final LinkedList<Task> history;
 
     public InMemoryHistoryManager() {
-        this.history = new ArrayList<>();
+        this.history = new LinkedList<>();
     }
 
     @Override
-    public ArrayList<Task> getHistory() {
+    public List<Task> getHistory() {
         return this.history;
     }
 
     @Override
     public void add(Task task) {
-        if (task != null) {
-            if (this.history.size() < 10) {
-                this.history.add(task);
-            } else {
-                this.history.remove(0);
-                this.history.add(task);
-            }
+        if (this.history.size() == 10) {
+            this.history.removeFirst();
         }
+        this.history.addLast(task);
     }
 }

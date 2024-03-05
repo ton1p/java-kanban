@@ -9,11 +9,11 @@ class TaskTest {
     @Test
     void shouldBeCorrectStatus() {
         Task task = new Task("test", "test", Status.NEW);
-        assertEquals(task.status, Status.NEW);
-        task.status = Status.IN_PROGRESS;
-        assertEquals(task.status, Status.IN_PROGRESS);
-        task.status = Status.DONE;
-        assertEquals(task.status, Status.DONE);
+        assertEquals(task.getStatus(), Status.NEW);
+        task.setStatus(Status.IN_PROGRESS);
+        assertEquals(task.getStatus(), Status.IN_PROGRESS);
+        task.setStatus(Status.DONE);
+        assertEquals(task.getStatus(), Status.DONE);
     }
 
     @Test

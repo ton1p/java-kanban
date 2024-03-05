@@ -6,6 +6,7 @@ import org.junit.jupiter.api.Test;
 import ru.yandex.schedule.tasks.*;
 
 import java.util.ArrayList;
+import java.util.List;
 
 class InMemoryTaskManagerTest {
     TaskManager taskManager;
@@ -85,21 +86,21 @@ class InMemoryTaskManagerTest {
     void updateTask() {
         Task task = new Task("t", "t", Status.NEW);
         taskManager.addTask(task);
-        task.status = Status.IN_PROGRESS;
+        task.setStatus(Status.IN_PROGRESS);
         taskManager.updateTask(task);
-        Assertions.assertEquals(Status.IN_PROGRESS, taskManager.getTaskById(task.getId()).status);
-        task.description = "description";
-        Assertions.assertEquals("description", taskManager.getTaskById(task.getId()).description);
+        Assertions.assertEquals(Status.IN_PROGRESS, taskManager.getTaskById(task.getId()).getStatus());
+        task.setDescription("description");
+        Assertions.assertEquals("description", taskManager.getTaskById(task.getId()).getDescription());
     }
 
     @Test
     void updateEpic() {
         Epic epic = new Epic("t", "t");
         taskManager.addTask(epic);
-        epic.name = "new name";
+        epic.setName("new name");
         taskManager.updateEpic(epic);
-        Assertions.assertEquals("new name", taskManager.getEpicById(epic.getId()).name);
-        Assertions.assertEquals(epic.name, taskManager.getEpicById(epic.getId()).name);
+        Assertions.assertEquals("new name", taskManager.getEpicById(epic.getId()).getName());
+        Assertions.assertEquals(epic.getName(), taskManager.getEpicById(epic.getId()).getName());
     }
 
     @Test
@@ -112,9 +113,9 @@ class InMemoryTaskManagerTest {
         Assertions.assertNotNull(taskManager.getEpicById(epic.getId()));
         Assertions.assertNotNull(taskManager.getSubTaskById(subTask.getId()));
 
-        subTask.status = Status.DONE;
+        subTask.setStatus(Status.DONE);
         taskManager.updateSubTask(subTask);
-        Assertions.assertEquals(Status.DONE, taskManager.getSubTaskById(subTask.getId()).status);
+        Assertions.assertEquals(Status.DONE, taskManager.getSubTaskById(subTask.getId()).getStatus());
     }
 
     @Test
@@ -149,7 +150,7 @@ class InMemoryTaskManagerTest {
 
     @Test
     void getEpicSubTasks() {
-        ArrayList<SubTask> subTasks = new ArrayList<>();
+        List<SubTask> subTasks = new ArrayList<>();
         Epic epic = new Epic("t", "t");
         SubTask subTask = new SubTask("t", "t", Status.NEW, epic.getId());
         epic.addSubTask(subTask);
@@ -161,19 +162,22 @@ class InMemoryTaskManagerTest {
 
     @Test
     void getHistory() {
-        ArrayList<Task> tasks = new ArrayList<>();
+        List<Task> tasks = new ArrayList<>();
         Epic epic = new Epic("t", "t");
         SubTask subTask = new SubTask("t", "t", Status.NEW, epic.getId());
         Task task = new Task("t", "t", Status.NEW);
+
         taskManager.addTask(epic);
         taskManager.addTask(subTask);
         taskManager.addTask(task);
-        for (int i = 0; i < 3; i++) {
+
+        for (int i = 0; i < 2; i++) {
             tasks.add(taskManager.getTaskById(task.getId()));
             tasks.add(taskManager.getEpicById(epic.getId()));
             tasks.add(taskManager.getSubTaskById(subTask.getId()));
+            tasks.add(taskManager.getEpicById(epic.getId()));
+            tasks.add(taskManager.getTaskById(task.getId()));
         }
-        tasks.add(taskManager.getSubTaskById(subTask.getId()));
 
         Assertions.assertEquals(tasks, taskManager.getHistory());
 

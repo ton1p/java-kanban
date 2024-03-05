@@ -1,23 +1,17 @@
 package ru.yandex.schedule.tasks;
 
 import java.util.ArrayList;
+import java.util.List;
 
 public class Epic extends Task {
-    private final ArrayList<SubTask> subTasks;
-
-    private Status status;
-
-    public Status getStatus() {
-        return this.status;
-    }
+    private final List<SubTask> subTasks;
 
     public Epic(String name, String description) {
         super(name, description, Status.NEW);
         this.subTasks = new ArrayList<>();
-        this.status = Status.NEW;
     }
 
-    public ArrayList<SubTask> getSubTasks() {
+    public List<SubTask> getSubTasks() {
         return this.subTasks;
     }
 
@@ -25,7 +19,7 @@ public class Epic extends Task {
         int index = this.subTasks.indexOf(subTask);
         if (index != -1) {
             this.subTasks.remove(index);
-            this.status = this.computeStatus();
+            this.setStatus(this.computeStatus());
         }
     }
 
@@ -33,7 +27,7 @@ public class Epic extends Task {
         int index = this.subTasks.indexOf(subTask);
         if (index != -1) {
             this.subTasks.set(index, subTask);
-            this.status = this.computeStatus();
+            this.setStatus(this.computeStatus());
             return true;
         }
         return false;
@@ -41,12 +35,12 @@ public class Epic extends Task {
 
     public void addSubTask(SubTask subTask) {
         this.subTasks.add(subTask);
-        this.status = this.computeStatus();
+        this.setStatus(this.computeStatus());
     }
 
     public void clearSubTasks() {
         this.subTasks.clear();
-        this.status = this.computeStatus();
+        this.setStatus(this.computeStatus());
     }
 
     private Status computeStatus() {
@@ -58,11 +52,11 @@ public class Epic extends Task {
         }
 
         for (SubTask subTask : subTasks) {
-            if (subTask.status == Status.DONE) {
+            if (subTask.getStatus() == Status.DONE) {
                 doneSize++;
                 continue;
             }
-            if (subTask.status == Status.NEW) {
+            if (subTask.getStatus() == Status.NEW) {
                 newSize++;
             }
         }
@@ -82,9 +76,9 @@ public class Epic extends Task {
     public String toString() {
         return "Epic{" +
                 "subTasksSize=" + subTasks.size() +
-                ", status=" + status +
-                ", name='" + name + '\'' +
-                ", description='" + description + '\'' +
+                ", status=" + getStatus() +
+                ", name='" + getName() + '\'' +
+                ", description='" + getDescription() + '\'' +
                 '}';
     }
 }

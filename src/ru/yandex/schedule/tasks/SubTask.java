@@ -3,10 +3,18 @@ package ru.yandex.schedule.tasks;
 import java.util.Objects;
 
 public class SubTask extends Task {
-    public String epicId;
+    private String epicId;
 
     public SubTask(String name, String description, Status status, String epicId) {
         super(name, description, status);
+        this.epicId = epicId;
+    }
+
+    public String getEpicId() {
+        return epicId;
+    }
+
+    public void setEpicId(String epicId) {
         this.epicId = epicId;
     }
 
@@ -28,9 +36,9 @@ public class SubTask extends Task {
     public String toString() {
         return "SubTask{" +
                 "epicId='" + epicId + '\'' +
-                ", name='" + name + '\'' +
-                ", description='" + description + '\'' +
-                ", status=" + status +
+                ", name='" + getName() + '\'' +
+                ", description='" + getDescription() + '\'' +
+                ", status=" + getStatus() +
                 '}';
     }
 }
