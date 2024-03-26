@@ -1,6 +1,7 @@
 package ru.yandex.schedule.tasks;
 
 import org.junit.jupiter.api.Test;
+import ru.yandex.schedule.tasks.enums.Status;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 

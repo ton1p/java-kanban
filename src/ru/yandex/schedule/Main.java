@@ -1,11 +1,11 @@
 package ru.yandex.schedule;
 
 import ru.yandex.schedule.managers.Managers;
-import ru.yandex.schedule.managers.TaskManager;
+import ru.yandex.schedule.managers.interfaces.TaskManager;
 import ru.yandex.schedule.tasks.Epic;
-import ru.yandex.schedule.tasks.Status;
 import ru.yandex.schedule.tasks.SubTask;
 import ru.yandex.schedule.tasks.Task;
+import ru.yandex.schedule.tasks.enums.Status;
 
 public class Main {
     public static TaskManager taskManager = Managers.getDefaultTask();

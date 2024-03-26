@@ -2,6 +2,7 @@ package ru.yandex.schedule.tasks;
 
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
+import ru.yandex.schedule.tasks.enums.Status;
 
 class SubTaskTest {
 

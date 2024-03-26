@@ -1,5 +1,6 @@
 package ru.yandex.schedule.managers;
 
+import ru.yandex.schedule.managers.interfaces.HistoryManager;
 import ru.yandex.schedule.tasks.Task;
 
 import java.util.LinkedList;

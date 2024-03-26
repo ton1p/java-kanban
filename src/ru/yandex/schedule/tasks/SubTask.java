@@ -1,5 +1,7 @@
 package ru.yandex.schedule.tasks;
 
+import ru.yandex.schedule.tasks.enums.Status;
+
 import java.util.Objects;
 
 public class SubTask extends Task {

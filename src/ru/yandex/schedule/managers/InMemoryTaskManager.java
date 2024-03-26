@@ -1,9 +1,11 @@
 package ru.yandex.schedule.managers;
 
+import ru.yandex.schedule.managers.interfaces.HistoryManager;
+import ru.yandex.schedule.managers.interfaces.TaskManager;
 import ru.yandex.schedule.tasks.Epic;
 import ru.yandex.schedule.tasks.SubTask;
 import ru.yandex.schedule.tasks.Task;
-import ru.yandex.schedule.tasks.TaskType;
+import ru.yandex.schedule.tasks.enums.TaskType;
 
 import java.util.ArrayList;
 import java.util.HashMap;

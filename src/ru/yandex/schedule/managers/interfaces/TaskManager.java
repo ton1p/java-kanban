@@ -1,9 +1,9 @@
-package ru.yandex.schedule.managers;
+package ru.yandex.schedule.managers.interfaces;
 
 import ru.yandex.schedule.tasks.Epic;
 import ru.yandex.schedule.tasks.SubTask;
 import ru.yandex.schedule.tasks.Task;
-import ru.yandex.schedule.tasks.TaskType;
+import ru.yandex.schedule.tasks.enums.TaskType;
 
 import java.util.List;
 
