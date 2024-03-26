@@ -1,5 +1,7 @@
 package ru.yandex.schedule.tasks;
 
+import ru.yandex.schedule.tasks.enums.Status;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -9,6 +11,11 @@ public class Epic extends Task {
     public Epic(String name, String description) {
         super(name, description, Status.NEW);
         this.subTasks = new ArrayList<>();
+    }
+
+    public Epic(Epic epic) {
+        super(epic.getId(), epic.getName(), epic.getDescription(), Status.NEW);
+        this.subTasks = epic.subTasks;
     }
 
     public List<SubTask> getSubTasks() {

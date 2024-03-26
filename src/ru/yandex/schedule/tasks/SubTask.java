@@ -1,5 +1,7 @@
 package ru.yandex.schedule.tasks;
 
+import ru.yandex.schedule.tasks.enums.Status;
+
 import java.util.Objects;
 
 public class SubTask extends Task {
@@ -8,6 +10,11 @@ public class SubTask extends Task {
     public SubTask(String name, String description, Status status, String epicId) {
         super(name, description, status);
         this.epicId = epicId;
+    }
+
+    public SubTask(SubTask subTask) {
+        super(subTask.getId(), subTask.getName(), subTask.getDescription(), subTask.getStatus());
+        this.epicId = subTask.getEpicId();
     }
 
     public String getEpicId() {
