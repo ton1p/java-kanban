@@ -15,4 +15,12 @@ class SubTaskTest {
 
         Assertions.assertEquals(subTask, subTask1);
     }
+
+    @Test
+    void setEpicId() {
+        Epic epic = new Epic("e", "e");
+        SubTask subTask = new SubTask("t", "t", Status.IN_PROGRESS, epic.getId());
+        subTask.setEpicId("1");
+        Assertions.assertEquals("1", subTask.getEpicId());
+    }
 }

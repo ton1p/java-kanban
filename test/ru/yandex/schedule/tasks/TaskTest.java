@@ -4,6 +4,7 @@ import org.junit.jupiter.api.Test;
 import ru.yandex.schedule.tasks.enums.Status;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotSame;
 
 class TaskTest {
 
@@ -15,6 +16,13 @@ class TaskTest {
         assertEquals(task.getStatus(), Status.IN_PROGRESS);
         task.setStatus(Status.DONE);
         assertEquals(task.getStatus(), Status.DONE);
+    }
+
+    @Test
+    void copy() {
+        Task task = new Task("test", "test", Status.NEW);
+        Task copy = new Task(task);
+        assertNotSame(task, copy);
     }
 
     @Test

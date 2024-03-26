@@ -21,6 +21,20 @@ public class Task {
         this.id = UUID.randomUUID().toString();
     }
 
+    public Task(String id, String name, String description, Status status) {
+        this.id = id;
+        this.name = name;
+        this.description = description;
+        this.status = status;
+    }
+
+    public Task(Task task) {
+        this.id = task.id;
+        this.name = task.name;
+        this.description = task.description;
+        this.status = task.status;
+    }
+
     public String getId() {
         return id;
     }
