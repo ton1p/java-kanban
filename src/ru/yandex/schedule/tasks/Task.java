@@ -3,14 +3,13 @@ package ru.yandex.schedule.tasks;
 import ru.yandex.schedule.tasks.enums.Status;
 
 import java.util.Objects;
-import java.util.UUID;
 
 public class Task {
     private String name;
 
     private String description;
 
-    private String id;
+    private int id;
 
     private Status status;
 
@@ -18,28 +17,13 @@ public class Task {
         this.name = name;
         this.description = description;
         this.status = status;
-        this.id = UUID.randomUUID().toString();
     }
 
-    public Task(String id, String name, String description, Status status) {
-        this.id = id;
-        this.name = name;
-        this.description = description;
-        this.status = status;
-    }
-
-    public Task(Task task) {
-        this.id = task.id;
-        this.name = task.name;
-        this.description = task.description;
-        this.status = task.status;
-    }
-
-    public String getId() {
+    public int getId() {
         return id;
     }
 
-    public void setId(String id) {
+    public void setId(int id) {
         this.id = id;
     }
 

@@ -12,12 +12,13 @@ public class Main {
 
     public static void main(String[] args) {
         Epic epic = new Epic("e1", "e1");
+        taskManager.addTask(epic);
         for (int i = 0; i < 3; i++) {
-            epic.addSubTask(new SubTask("s" + i, "s" + i, Status.NEW, epic.getId()));
+            SubTask subTask = new SubTask("s" + i, "s" + i, Status.NEW, epic.getId());
+            taskManager.addTask(subTask);
+            epic.addSubTask(subTask);
         }
         Epic epic2 = new Epic("e2", "e2");
-
-        taskManager.addTask(epic);
         taskManager.addTask(epic2);
 
 

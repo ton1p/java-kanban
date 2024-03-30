@@ -5,23 +5,18 @@ import ru.yandex.schedule.tasks.enums.Status;
 import java.util.Objects;
 
 public class SubTask extends Task {
-    private String epicId;
+    private int epicId;
 
-    public SubTask(String name, String description, Status status, String epicId) {
+    public SubTask(String name, String description, Status status, int epicId) {
         super(name, description, status);
         this.epicId = epicId;
     }
 
-    public SubTask(SubTask subTask) {
-        super(subTask.getId(), subTask.getName(), subTask.getDescription(), subTask.getStatus());
-        this.epicId = subTask.getEpicId();
-    }
-
-    public String getEpicId() {
+    public int getEpicId() {
         return epicId;
     }
 
-    public void setEpicId(String epicId) {
+    public void setEpicId(int epicId) {
         this.epicId = epicId;
     }
 

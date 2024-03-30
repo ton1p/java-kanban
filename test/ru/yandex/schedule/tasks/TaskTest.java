@@ -4,7 +4,6 @@ import org.junit.jupiter.api.Test;
 import ru.yandex.schedule.tasks.enums.Status;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotSame;
 
 class TaskTest {
 
@@ -19,17 +18,10 @@ class TaskTest {
     }
 
     @Test
-    void copy() {
-        Task task = new Task("test", "test", Status.NEW);
-        Task copy = new Task(task);
-        assertNotSame(task, copy);
-    }
-
-    @Test
     void shouldBeCorrectIdAfterSetIdIsCalled() {
         Task task = new Task("test", "test", Status.NEW);
-        task.setId("1");
-        assertEquals("1", task.getId());
+        task.setId(1);
+        assertEquals(1, task.getId());
     }
 
     @Test

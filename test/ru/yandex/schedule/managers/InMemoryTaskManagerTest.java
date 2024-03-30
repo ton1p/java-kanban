@@ -63,6 +63,16 @@ class InMemoryTaskManagerTest {
         Assertions.assertEquals(0, taskManager.getEpicsList().size());
         Assertions.assertEquals(0, taskManager.getTasksList().size());
         Assertions.assertEquals(0, taskManager.getSubTasksList().size());
+
+        Task task1 = new Task("", "", Status.NEW);
+        taskManager.addTask(task1);
+        Task task2 = new Task("", "", Status.NEW);
+        taskManager.addTask(task2);
+        taskManager.getTaskById(task1.getId());
+        taskManager.getTaskById(task2.getId());
+        Assertions.assertEquals(List.of(task1, task2), taskManager.getHistory());
+        taskManager.removeAllTaskByType(TaskType.TASK);
+        Assertions.assertEquals(0, taskManager.getHistory().size());
     }
 
     @Test
@@ -136,11 +146,11 @@ class InMemoryTaskManagerTest {
     @Test
     void removeEpic() {
         Epic epic = new Epic("t", "t");
+        taskManager.addTask(epic);
         SubTask subTask = new SubTask("s", "s", Status.NEW, epic.getId());
+        taskManager.addTask(subTask);
         epic.addSubTask(subTask);
 
-        taskManager.addTask(epic);
-        taskManager.addTask(subTask);
 
         Assertions.assertEquals(1, taskManager.getEpicsList().size());
         taskManager.removeEpic(epic.getId());
