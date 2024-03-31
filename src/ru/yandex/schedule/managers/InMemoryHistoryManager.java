@@ -40,7 +40,7 @@ public class InMemoryHistoryManager implements HistoryManager {
     private final Map<Integer, Node> nodeMap;
 
     public InMemoryHistoryManager() {
-        nodeMap = new HashMap<>();
+        this.nodeMap = new HashMap<>();
     }
 
     @Override
@@ -50,33 +50,34 @@ public class InMemoryHistoryManager implements HistoryManager {
 
     private Node linkLast(Task task) {
         Node node = new Node(null, task, null);
-        if (head == null) {
-            head = tail = node;
+        if (this.head == null) {
+            this.head = this.tail = node;
         } else {
-            node.prev = tail;
-            tail.next = node;
-            tail = node;
+            node.prev = this.tail;
+            this.tail.next = node;
+            this.tail = node;
         }
         return node;
     }
 
     private void removeNode(int id) {
-        Node node = nodeMap.get(id);
+        Node node = this.nodeMap.get(id);
         if (node != null) {
-            if (node.equals(head)) {
-                head = node.next;
-            } else if (node.equals(tail)) {
-                tail = node.prev;
+            if (node.equals(this.head)) {
+                this.head = node.next;
+            } else if (node.equals(this.tail)) {
+                this.tail = node.prev;
             } else {
                 node.prev.next = node.next;
                 node.next.prev = node.prev;
             }
+            this.nodeMap.remove(id);
         }
     }
 
     private List<Task> getTasks() {
         List<Task> tasks = new ArrayList<>();
-        Node currentNode = head;
+        Node currentNode = this.head;
         while (currentNode != null) {
             tasks.add(currentNode.data);
             currentNode = currentNode.next;
@@ -86,10 +87,10 @@ public class InMemoryHistoryManager implements HistoryManager {
 
     @Override
     public void add(Task task) {
-        if (nodeMap.containsKey(task.getId())) {
+        if (this.nodeMap.containsKey(task.getId())) {
             removeNode(task.getId());
         }
-        nodeMap.put(task.getId(), linkLast(task));
+        this.nodeMap.put(task.getId(), linkLast(task));
     }
 
     @Override
