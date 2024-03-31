@@ -1,20 +1,23 @@
 package ru.yandex.schedule.managers;
 
+import ru.yandex.schedule.managers.interfaces.HistoryManager;
+import ru.yandex.schedule.managers.interfaces.TaskManager;
 import ru.yandex.schedule.tasks.Epic;
 import ru.yandex.schedule.tasks.SubTask;
 import ru.yandex.schedule.tasks.Task;
-import ru.yandex.schedule.tasks.TaskType;
+import ru.yandex.schedule.tasks.enums.TaskType;
 
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
 public class InMemoryTaskManager implements TaskManager {
-    private final HashMap<String, Task> taskHashMap;
+    private int id;
+    private final HashMap<Integer, Task> taskHashMap;
 
-    private final HashMap<String, Epic> epicHashMap;
+    private final HashMap<Integer, Epic> epicHashMap;
 
-    private final HashMap<String, SubTask> subTaskHashMap;
+    private final HashMap<Integer, SubTask> subTaskHashMap;
 
     private final HistoryManager historyManager;
 
@@ -23,142 +26,162 @@ public class InMemoryTaskManager implements TaskManager {
         this.epicHashMap = new HashMap<>();
         this.subTaskHashMap = new HashMap<>();
         this.historyManager = Managers.getDefaultHistory();
+        this.id = 0;
     }
 
     @Override
     public List<Task> getTasksList() {
-        return new ArrayList<>(taskHashMap.values());
+        return new ArrayList<>(this.taskHashMap.values());
     }
 
     @Override
     public List<Epic> getEpicsList() {
-        return new ArrayList<>(epicHashMap.values());
+        return new ArrayList<>(this.epicHashMap.values());
     }
 
     @Override
     public List<SubTask> getSubTasksList() {
-        return new ArrayList<>(subTaskHashMap.values());
+        return new ArrayList<>(this.subTaskHashMap.values());
     }
 
     @Override
     public void removeAllTaskByType(TaskType taskType) {
         switch (taskType) {
             case TASK: {
-                taskHashMap.clear();
+                this.taskHashMap.forEach((id, task) -> this.historyManager.remove(id));
+                this.taskHashMap.clear();
                 break;
             }
             case EPIC: {
-                epicHashMap.clear();
-                subTaskHashMap.clear();
+                this.epicHashMap.forEach((id, epic) -> this.historyManager.remove(id));
+                this.subTaskHashMap.forEach((id, subTask) -> this.historyManager.remove(id));
+                this.epicHashMap.clear();
+                this.subTaskHashMap.clear();
                 break;
             }
             case SUBTASK: {
-                subTaskHashMap.clear();
+                this.subTaskHashMap.forEach((id, subTask) -> this.historyManager.remove(id));
+                this.subTaskHashMap.clear();
                 break;
             }
         }
     }
 
     @Override
-    public Task getTaskById(String id) {
-        Task task = taskHashMap.get(id);
-        historyManager.add(task);
+    public Task getTaskById(int id) {
+        Task task = this.taskHashMap.get(id);
+        this.historyManager.add(task);
         return task;
     }
 
     @Override
-    public Epic getEpicById(String id) {
-        Epic epic = epicHashMap.get(id);
-        historyManager.add(epic);
+    public Epic getEpicById(int id) {
+        Epic epic = this.epicHashMap.get(id);
+        this.historyManager.add(epic);
         return epic;
     }
 
     @Override
-    public SubTask getSubTaskById(String id) {
-        SubTask subTask = subTaskHashMap.get(id);
-        historyManager.add(subTask);
+    public SubTask getSubTaskById(int id) {
+        SubTask subTask = this.subTaskHashMap.get(id);
+        if (subTask != null) {
+            this.historyManager.add(subTask);
+        }
         return subTask;
     }
 
     @Override
     public void addTask(Task task) {
-        taskHashMap.put(task.getId(), task);
+        task.setId(++id);
+        this.taskHashMap.put(task.getId(), task);
     }
 
     @Override
-    public void addTask(Epic epic) {
-        epicHashMap.put(epic.getId(), epic);
+    public void addEpic(Epic epic) {
+        epic.setId(++id);
+        this.epicHashMap.put(epic.getId(), epic);
     }
 
     @Override
-    public void addTask(SubTask subTask) {
-        subTaskHashMap.put(subTask.getId(), subTask);
+    public void addSubTask(SubTask subTask) {
+        subTask.setId(++id);
+        Epic epic = this.epicHashMap.get(subTask.getEpicId());
+        if (epic != null) {
+            epic.addSubTask(subTask);
+            this.subTaskHashMap.put(subTask.getId(), subTask);
+        }
     }
 
     @Override
     public void updateTask(Task task) {
-        if (taskHashMap.containsKey(task.getId())) {
-            taskHashMap.put(task.getId(), task);
+        if (this.taskHashMap.containsKey(task.getId())) {
+            this.taskHashMap.put(task.getId(), task);
         }
     }
 
     @Override
     public void updateEpic(Epic epic) {
-        Epic epicFound = epicHashMap.get(epic.getId());
+        Epic epicFound = this.epicHashMap.get(epic.getId());
         if (epicFound != null) {
             epicFound.setName(epic.getName());
             epicFound.setDescription(epicFound.getDescription());
-            epicHashMap.put(epicFound.getId(), epicFound);
+            this.epicHashMap.put(epicFound.getId(), epicFound);
         }
     }
 
     @Override
     public void updateSubTask(SubTask subTask) {
-        Epic epic = epicHashMap.get(subTask.getEpicId());
+        Epic epic = this.epicHashMap.get(subTask.getEpicId());
         if (epic != null) {
             boolean isUpdated = epic.updateSubTask(subTask);
             if (isUpdated) {
-                if (subTaskHashMap.containsKey(subTask.getId())) {
-                    subTaskHashMap.put(subTask.getId(), subTask);
+                if (this.subTaskHashMap.containsKey(subTask.getId())) {
+                    this.subTaskHashMap.put(subTask.getId(), subTask);
                 }
             }
         }
     }
 
     @Override
-    public void removeTask(String id) {
-        taskHashMap.remove(id);
+    public void removeTask(int id) {
+        this.taskHashMap.remove(id);
+        this.historyManager.remove(id);
     }
 
     @Override
-    public void removeEpic(String id) {
-        Epic epic = epicHashMap.get(id);
+    public void removeEpic(int id) {
+        Epic epic = this.epicHashMap.get(id);
         if (epic != null) {
-            epic.getSubTasks().forEach((s) -> subTaskHashMap.remove(s.getId()));
+            epic.getSubTasks().forEach((s) -> {
+                this.subTaskHashMap.remove(s.getId());
+                this.historyManager.remove(s.getId());
+            });
             epic.clearSubTasks();
-            epicHashMap.remove(id);
+            this.epicHashMap.remove(id);
+            this.historyManager.remove(id);
         }
     }
 
     @Override
-    public void removeSubTask(String id) {
-        SubTask subTask = subTaskHashMap.get(id);
+    public void removeSubTask(int id) {
+        SubTask subTask = this.subTaskHashMap.get(id);
         if (subTask != null) {
-            Epic epic = epicHashMap.get(subTask.getEpicId());
+            Epic epic = this.epicHashMap.get(subTask.getEpicId());
             if (epic != null) {
                 epic.removeSubTask(subTask);
             }
-            subTaskHashMap.remove(id);
+            this.subTaskHashMap.remove(id);
+            this.historyManager.remove(id);
         }
     }
 
     @Override
-    public List<SubTask> getEpicSubTasks(String epicId) {
-        return epicHashMap.get(epicId).getSubTasks();
+    public List<SubTask> getEpicSubTasks(int epicId) {
+        return this.epicHashMap.get(epicId).getSubTasks();
     }
 
     @Override
     public List<Task> getHistory() {
-        return historyManager.getHistory();
+        return this.historyManager.getHistory();
     }
 }

@@ -1,4 +1,4 @@
-package ru.yandex.schedule.managers;
+package ru.yandex.schedule.managers.interfaces;
 
 import ru.yandex.schedule.tasks.Task;
 
@@ -8,4 +8,6 @@ public interface HistoryManager {
     List<Task> getHistory();
 
     void add(Task task);
+
+    void remove(int id);
 }

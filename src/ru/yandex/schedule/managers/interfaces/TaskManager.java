@@ -1,9 +1,9 @@
-package ru.yandex.schedule.managers;
+package ru.yandex.schedule.managers.interfaces;
 
 import ru.yandex.schedule.tasks.Epic;
 import ru.yandex.schedule.tasks.SubTask;
 import ru.yandex.schedule.tasks.Task;
-import ru.yandex.schedule.tasks.TaskType;
+import ru.yandex.schedule.tasks.enums.TaskType;
 
 import java.util.List;
 
@@ -16,17 +16,17 @@ public interface TaskManager {
 
     void removeAllTaskByType(TaskType taskType);
 
-    Task getTaskById(String id);
+    Task getTaskById(int id);
 
-    Epic getEpicById(String id);
+    Epic getEpicById(int id);
 
-    SubTask getSubTaskById(String id);
+    SubTask getSubTaskById(int id);
 
     void addTask(Task task);
 
-    void addTask(Epic epic);
+    void addEpic(Epic epic);
 
-    void addTask(SubTask subTask);
+    void addSubTask(SubTask subTask);
 
     void updateTask(Task task);
 
@@ -34,13 +34,13 @@ public interface TaskManager {
 
     void updateSubTask(SubTask subTask);
 
-    void removeTask(String id);
+    void removeTask(int id);
 
-    void removeEpic(String id);
+    void removeEpic(int id);
 
-    void removeSubTask(String id);
+    void removeSubTask(int id);
 
-    List<SubTask> getEpicSubTasks(String epicId);
+    List<SubTask> getEpicSubTasks(int epicId);
 
     List<Task> getHistory();
 }
