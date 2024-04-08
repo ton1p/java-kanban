@@ -11,15 +11,11 @@ public class Managers {
         throw new IllegalStateException("Utility class");
     }
 
-    public static TaskManager getDefaultTask() {
-        return new InMemoryTaskManager();
+    public static TaskManager getDefaultTask(File file) {
+        return new FileBackedTaskManager(file);
     }
 
     public static HistoryManager getDefaultHistory() {
         return new InMemoryHistoryManager();
-    }
-
-    public static TaskManager getDefaultFile(File file) {
-        return new FileBackedTaskManager(file);
     }
 }

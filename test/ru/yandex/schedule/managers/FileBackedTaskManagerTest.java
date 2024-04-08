@@ -91,6 +91,7 @@ class FileBackedTaskManagerTest {
         assertEquals(1, fileBackedTaskManager.getEpicsList().size());
         assertEquals(1, fileBackedTaskManager.getSubTasksList().size());
         assertEquals(3, fileBackedTaskManager.getHistory().size());
+        assertEquals(3, fileBackedTaskManager.id);
     }
 
     @Test
