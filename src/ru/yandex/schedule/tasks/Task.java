@@ -1,6 +1,7 @@
 package ru.yandex.schedule.tasks;
 
 import ru.yandex.schedule.tasks.enums.Status;
+import ru.yandex.schedule.tasks.enums.TaskType;
 
 import java.util.Objects;
 
@@ -66,6 +67,6 @@ public class Task {
 
     @Override
     public String toString() {
-        return "Task{" + "name='" + name + '\'' + ", description='" + description + '\'' + ", id='" + id + '\'' + ", status=" + status + '}';
+        return String.format("%s,%s,%s,%s,%s", id, TaskType.TASK, name, status, description);
     }
 }
