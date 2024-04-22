@@ -1,6 +1,7 @@
 package ru.yandex.schedule.tasks;
 
 import ru.yandex.schedule.tasks.enums.Status;
+import ru.yandex.schedule.tasks.enums.TaskType;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -76,11 +77,6 @@ public class Epic extends Task {
 
     @Override
     public String toString() {
-        return "Epic{" +
-                "subTasksSize=" + subTasks.size() +
-                ", status=" + getStatus() +
-                ", name='" + getName() + '\'' +
-                ", description='" + getDescription() + '\'' +
-                '}';
+        return String.format("%s,%s,%s,%s,%s", getId(), TaskType.EPIC, getName(), getStatus(), getDescription());
     }
 }

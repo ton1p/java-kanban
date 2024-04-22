@@ -12,14 +12,14 @@ import java.util.HashMap;
 import java.util.List;
 
 public class InMemoryTaskManager implements TaskManager {
-    private int id;
-    private final HashMap<Integer, Task> taskHashMap;
+    protected int id;
+    protected final HashMap<Integer, Task> taskHashMap;
 
-    private final HashMap<Integer, Epic> epicHashMap;
+    protected final HashMap<Integer, Epic> epicHashMap;
 
-    private final HashMap<Integer, SubTask> subTaskHashMap;
+    protected final HashMap<Integer, SubTask> subTaskHashMap;
 
-    private final HistoryManager historyManager;
+    protected final HistoryManager historyManager;
 
     public InMemoryTaskManager() {
         this.taskHashMap = new HashMap<>();
@@ -152,7 +152,7 @@ public class InMemoryTaskManager implements TaskManager {
     public void removeEpic(int id) {
         Epic epic = this.epicHashMap.get(id);
         if (epic != null) {
-            epic.getSubTasks().forEach((s) -> {
+            epic.getSubTasks().forEach(s -> {
                 this.subTaskHashMap.remove(s.getId());
                 this.historyManager.remove(s.getId());
             });

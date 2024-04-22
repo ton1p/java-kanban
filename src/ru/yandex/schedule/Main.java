@@ -7,8 +7,11 @@ import ru.yandex.schedule.tasks.SubTask;
 import ru.yandex.schedule.tasks.Task;
 import ru.yandex.schedule.tasks.enums.Status;
 
+import java.io.File;
+
 public class Main {
-    public static TaskManager taskManager = Managers.getDefaultTask();
+    static File file = new File("src/resources/tasks.csv");
+    public static TaskManager taskManager = Managers.getDefaultTask(file);
 
     public static void main(String[] args) {
         Epic epic = new Epic("e1", "e1");
