@@ -3,6 +3,8 @@ package ru.yandex.schedule.tasks;
 import ru.yandex.schedule.tasks.enums.Status;
 import ru.yandex.schedule.tasks.enums.TaskType;
 
+import java.time.Duration;
+import java.time.Instant;
 import java.util.Objects;
 
 public class SubTask extends Task {
@@ -10,6 +12,18 @@ public class SubTask extends Task {
 
     public SubTask(String name, String description, Status status, int epicId) {
         super(name, description, status);
+        this.epicId = epicId;
+    }
+
+    public SubTask(
+            String name,
+            String description,
+            Status status,
+            int epicId,
+            Duration duration,
+            Instant startTime
+    ) {
+        super(name, description, status, duration, startTime);
         this.epicId = epicId;
     }
 
@@ -27,7 +41,7 @@ public class SubTask extends Task {
         if (o == null || getClass() != o.getClass()) return false;
         if (!super.equals(o)) return false;
         SubTask subTask = (SubTask) o;
-        return Objects.equals(epicId, subTask.epicId);
+        return epicId == subTask.epicId;
     }
 
     @Override
@@ -37,6 +51,6 @@ public class SubTask extends Task {
 
     @Override
     public String toString() {
-        return String.format("%s,%s,%s,%s,%s,%s", getId(), TaskType.SUBTASK, getName(), getStatus(), getDescription(), epicId);
+        return String.format("%s,%s,%s,%s,%s,%s,%s,%s", getId(), TaskType.SUBTASK, getName(), getStatus(), getDescription(), getDurationString(), getStartTimeString(), epicId);
     }
 }

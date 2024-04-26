@@ -1,6 +1,7 @@
-id,type,name,status,description,epic
-1,TASK,name,NEW,desc
-3,SUBTASK,s,IN_PROGRESS,d,2
-2,EPIC,e,IN_PROGRESS,d
+id,type,name,status,description,duration,startTime,epic
+5,TASK,tn,DONE,td,null,null
+2,SUBTASK,s0,NEW,s0,5,2024-04-26T20:02:17.955817Z,1
+1,EPIC,e1,NEW,e1,5,2024-04-26T20:02:17.955817Z
+6,EPIC,e2,NEW,e2,null,null
 
-1,2,3
+6,2,1

@@ -8,15 +8,15 @@ import ru.yandex.schedule.tasks.Task;
 import ru.yandex.schedule.tasks.enums.Status;
 import ru.yandex.schedule.tasks.enums.TaskType;
 
-import java.io.BufferedReader;
-import java.io.BufferedWriter;
-import java.io.File;
-import java.io.FileWriter;
-import java.util.ArrayList;
+import java.io.*;
+import java.time.Duration;
+import java.time.Instant;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
-import java.io.IOException;
-import java.io.FileReader;
+import java.util.stream.Collectors;
+
+import static ru.yandex.schedule.utils.TaskParser.*;
 
 public class FileBackedTaskManager extends InMemoryTaskManager {
     private final File file;
@@ -29,12 +29,14 @@ public class FileBackedTaskManager extends InMemoryTaskManager {
         File file1 = new File("src/resources/tasks.csv");
         FileBackedTaskManager fileBackedTaskManager = new FileBackedTaskManager(file1);
 
-        Task task = new Task("name", "desc", Status.NEW);
+        Instant now = Instant.now();
+
+        Task task = new Task("name", "desc", Status.NEW, Duration.ofMinutes(5), now);
         fileBackedTaskManager.addTask(task);
 
         Epic epic = new Epic("e", "d");
         fileBackedTaskManager.addEpic(epic);
-        SubTask subTask = new SubTask("s", "d", Status.IN_PROGRESS, epic.getId());
+        SubTask subTask = new SubTask("s", "d", Status.IN_PROGRESS, epic.getId(), Duration.ofMinutes(10), now);
         fileBackedTaskManager.addSubTask(subTask);
 
         fileBackedTaskManager.getTaskById(task.getId());
@@ -132,27 +134,32 @@ public class FileBackedTaskManager extends InMemoryTaskManager {
             List<Epic> epicList = super.getEpicsList();
             List<Task> history = super.getHistory();
 
-            StringBuilder stringBuilder = new StringBuilder("id,type,name,status,description,epic\n");
+            StringBuilder stringBuilder = new StringBuilder("id,type,name,status,description,duration,startTime,epic\n");
 
             if (!taskList.isEmpty()) {
                 isDataExist = true;
-                for (Task task : taskList) {
-                    stringBuilder.append(task.toString()).append('\n');
-                }
+                String tasksString = taskList
+                        .stream()
+                        .reduce("", (prev, task) -> prev + task.toString() + '\n', (s1, s2) -> s1 + s2);
+
+                stringBuilder.append(tasksString);
             }
 
             if (!subTaskList.isEmpty()) {
                 isDataExist = true;
-                for (SubTask subTask : subTaskList) {
-                    stringBuilder.append(subTask.toString()).append('\n');
-                }
+                String subtasksString = subTaskList
+                        .stream()
+                        .reduce("", (prev, subtask) -> prev + subtask.toString() + '\n', (s1, s2) -> s1 + s2);
+
+                stringBuilder.append(subtasksString);
             }
 
             if (!epicList.isEmpty()) {
                 isDataExist = true;
-                for (Epic epic : epicList) {
-                    stringBuilder.append(epic.toString()).append('\n');
-                }
+                String epicsString = epicList
+                        .stream()
+                        .reduce("", (prev, epic) -> prev + epic.toString() + '\n', (s1, s2) -> s1 + s2);
+                stringBuilder.append(epicsString);
             }
 
             stringBuilder.append('\n');
@@ -185,13 +192,8 @@ public class FileBackedTaskManager extends InMemoryTaskManager {
 
     public static List<Integer> getHistoryIdsFromString(String value) {
         String[] ids = value.split(",");
-        List<Integer> list = new ArrayList<>();
         try {
-            for (String id : ids) {
-                int toNumber = Integer.parseInt(id);
-                list.add(toNumber);
-            }
-            return list;
+            return Arrays.stream(ids).map(Integer::parseInt).collect(Collectors.toList());
         } catch (NumberFormatException e) {
             e.printStackTrace();
         }
@@ -201,31 +203,21 @@ public class FileBackedTaskManager extends InMemoryTaskManager {
     public Task fromString(String str) {
         try {
             String[] split = str.split(",");
-            int id = Integer.parseInt(split[0]);
             TaskType type = TaskType.valueOf(split[1].toUpperCase());
-            String name = split[2];
-            Status status = Status.valueOf(split[3].toUpperCase());
-            String description = split[4];
-
-            int epicId = 0;
-            if (split.length == 6 && (split[5] != null)) {
-                epicId = Integer.parseInt(split[5]);
-            }
-
             switch (type) {
                 case TASK:
-                    Task task = new Task(name, description, status);
-                    task.setId(id);
-                    return task;
-                case EPIC:
-                    Epic epic = new Epic(name, description);
-                    epic.setId(id);
-                    epic.setStatus(status);
+                    return stringToTask(split);
+                case EPIC: {
+                    Epic epic = stringToEpic(split);
+                    this.subTaskHashMap.forEach((id, subTask) -> {
+                        if (subTask.getEpicId() == epic.getId()) {
+                            epic.addSubTask(subTask);
+                        }
+                    });
                     return epic;
+                }
                 case SUBTASK:
-                    SubTask subTask = new SubTask(name, description, status, epicId);
-                    subTask.setId(id);
-                    return subTask;
+                    return stringToSubtask(split);
             }
         } catch (NumberFormatException e) {
             System.out.println("Некорректный id");

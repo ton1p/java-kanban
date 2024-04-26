@@ -8,18 +8,22 @@ import ru.yandex.schedule.tasks.Task;
 import ru.yandex.schedule.tasks.enums.Status;
 
 import java.io.File;
+import java.time.Duration;
+import java.time.Instant;
 
 public class Main {
     static File file = new File("src/resources/tasks.csv");
-    public static TaskManager taskManager = Managers.getDefaultTask(file);
+    private static final TaskManager taskManager = Managers.getDefaultTask(file);
 
     public static void main(String[] args) {
         Epic epic = new Epic("e1", "e1");
         taskManager.addEpic(epic);
         for (int i = 0; i < 3; i++) {
-            SubTask subTask = new SubTask("s" + i, "s" + i, Status.NEW, epic.getId());
+            SubTask subTask = new SubTask("s" + i, "s" + i, Status.NEW, epic.getId(), Duration.ofMinutes(5), Instant.now());
             taskManager.addSubTask(subTask);
         }
+        Task task = new Task("tn", "td", Status.DONE);
+        taskManager.addTask(task);
         Epic epic2 = new Epic("e2", "e2");
         taskManager.addEpic(epic2);
 
@@ -30,9 +34,6 @@ public class Main {
         taskManager.getEpicById(epic2.getId());
         printAllTasks(taskManager);
 
-        taskManager.getSubTaskById(epic.getSubTasks().get(1).getId());
-        printAllTasks(taskManager);
-
         taskManager.getSubTaskById(epic.getSubTasks().get(0).getId());
         printAllTasks(taskManager);
 
@@ -40,12 +41,6 @@ public class Main {
         printAllTasks(taskManager);
 
         taskManager.getEpicById(epic.getId());
-        printAllTasks(taskManager);
-
-        taskManager.getSubTaskById(epic.getSubTasks().get(2).getId());
-        printAllTasks(taskManager);
-
-        taskManager.removeSubTask(epic.getSubTasks().get(0).getId());
         printAllTasks(taskManager);
     }
 
