@@ -8,8 +8,13 @@ import ru.yandex.schedule.tasks.SubTask;
 import ru.yandex.schedule.tasks.Task;
 import ru.yandex.schedule.tasks.enums.TaskType;
 
-import java.util.*;
-import java.util.stream.Collectors;
+import java.time.Instant;
+import java.util.Comparator;
+import java.util.HashMap;
+import java.util.Optional;
+import java.util.TreeSet;
+import java.util.List;
+import java.util.ArrayList;
 
 public class InMemoryTaskManager implements TaskManager {
     protected int id;
@@ -39,25 +44,18 @@ public class InMemoryTaskManager implements TaskManager {
             throw new OverlapException("Задача пересекается по времени.");
         }
 
-        List<Task> existsTasks = this.getPrioritizedTasks()
+        Optional<Task> existsTask = this.getPrioritizedTasks()
                 .stream()
                 .filter(t -> t.getId() == task.getId())
-                .collect(Collectors.toList());
+                .findFirst();
 
-        if (!existsTasks.isEmpty()) {
-            this.sortedTasks.remove(existsTasks.get(0));
+        existsTask.ifPresentOrElse(t -> {
+            this.sortedTasks.remove(t);
             this.sortedTasks.add(task);
-        } else {
-            this.sortedTasks.add(task);
-        }
+        }, () -> this.sortedTasks.add(task));
     }
 
-    private void removeFromSortedById(int id) {
-        Task task = this.taskHashMap.getOrDefault(
-                id,
-                this.subTaskHashMap.getOrDefault(id, null)
-        );
-
+    private void removeFromSorted(Task task) {
         if (task != null) {
             this.sortedTasks.remove(task);
         }
@@ -82,23 +80,29 @@ public class InMemoryTaskManager implements TaskManager {
     public void removeAllTaskByType(TaskType taskType) {
         switch (taskType) {
             case TASK: {
-                this.taskHashMap.forEach((id, task) -> this.historyManager.remove(id));
+                this.taskHashMap.forEach((id, task) -> {
+                    this.historyManager.remove(id);
+                    removeFromSorted(task);
+                });
                 this.taskHashMap.clear();
-                this.sortedTasks.clear();
                 break;
             }
             case EPIC: {
                 this.epicHashMap.forEach((id, epic) -> this.historyManager.remove(id));
-                this.subTaskHashMap.forEach((id, subTask) -> this.historyManager.remove(id));
+                this.subTaskHashMap.forEach((id, subTask) -> {
+                    this.historyManager.remove(id);
+                    removeFromSorted(subTask);
+                });
                 this.epicHashMap.clear();
                 this.subTaskHashMap.clear();
-                this.sortedTasks.clear();
                 break;
             }
             case SUBTASK: {
-                this.subTaskHashMap.forEach((id, subTask) -> this.historyManager.remove(id));
+                this.subTaskHashMap.forEach((id, subTask) -> {
+                    this.historyManager.remove(id);
+                    removeFromSorted(subTask);
+                });
                 this.subTaskHashMap.clear();
-                this.sortedTasks.clear();
                 break;
             }
         }
@@ -229,9 +233,9 @@ public class InMemoryTaskManager implements TaskManager {
 
     @Override
     public void removeTask(int id) {
-        this.taskHashMap.remove(id);
+        Task task = this.taskHashMap.remove(id);
         this.historyManager.remove(id);
-        removeFromSortedById(id);
+        removeFromSorted(task);
     }
 
     @Override
@@ -240,6 +244,7 @@ public class InMemoryTaskManager implements TaskManager {
         if (epic != null) {
             epic.getSubTasks().forEach(s -> {
                 this.subTaskHashMap.remove(s.getId());
+                removeFromSorted(s);
                 this.historyManager.remove(s.getId());
             });
             epic.clearSubTasks();
@@ -258,7 +263,7 @@ public class InMemoryTaskManager implements TaskManager {
             }
             this.subTaskHashMap.remove(id);
             this.historyManager.remove(id);
-            removeFromSortedById(id);
+            removeFromSorted(subTask);
         }
     }
 
@@ -274,32 +279,28 @@ public class InMemoryTaskManager implements TaskManager {
 
     @Override
     public List<Task> getPrioritizedTasks() {
-        return this.sortedTasks
-                .stream()
-                .filter(t -> t.getDuration() != null && t.getStartTime() != null)
-                .collect(Collectors.toList());
+        return new ArrayList<>(this.sortedTasks);
     }
 
-    @Override
     public boolean isTasksOverlap(Task a, Task b) {
-        long aStart = a.getStartTime().toEpochMilli();
-        long aEnd = a.getEndTime().toEpochMilli();
+        Instant aStartTime = a.getStartTime();
+        Instant aEndTime = a.getEndTime();
 
-        long bStart = b.getStartTime().toEpochMilli();
-        long bEnd = b.getEndTime().toEpochMilli();
+        Instant bStartTime = b.getStartTime();
+        Instant bEndTime = b.getEndTime();
 
-        if (aStart == bStart && aEnd == bEnd) {
+        if (aStartTime.equals(bStartTime) && aEndTime.equals(bEndTime)) {
             return true;
         }
 
-        if (aStart == bStart || aEnd == bEnd) {
+        if (aStartTime.equals(bStartTime) || aEndTime.equals(bEndTime)) {
             return true;
         }
 
-        if (aStart >= bEnd) {
+        if (aStartTime.isAfter(bEndTime) || aStartTime.equals(bEndTime)) {
             return false;
         }
 
-        return aEnd > bStart;
+        return aEndTime.isAfter(bStartTime);
     }
 }

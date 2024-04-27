@@ -325,19 +325,4 @@ public abstract class TaskMangerTest<T extends TaskManager> {
 
         assertEquals(List.of(subTask, updatedTask), this.taskManager.getPrioritizedTasks());
     }
-
-    @Test
-    public void isTasksOverlap() {
-        Instant now = Instant.now();
-        Task task = new Task("d", "d", Status.NEW, Duration.ofMinutes(5), now);
-        Task task1 = new Task("d", "d", Status.NEW, Duration.ofMinutes(5), now);
-
-        assertTrue(this.taskManager.isTasksOverlap(task, task1));
-
-        task.setDuration(Duration.ofMinutes(10));
-        assertTrue(this.taskManager.isTasksOverlap(task, task1));
-
-        task.setStartTime(now.plus(Duration.ofMinutes(5)));
-        assertFalse(this.taskManager.isTasksOverlap(task, task1));
-    }
 }
