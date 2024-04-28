@@ -3,8 +3,11 @@ package ru.yandex.schedule.tasks;
 import ru.yandex.schedule.tasks.enums.Status;
 import ru.yandex.schedule.tasks.enums.TaskType;
 
+import java.time.Duration;
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 public class Epic extends Task {
     private final List<SubTask> subTasks;
@@ -76,7 +79,55 @@ public class Epic extends Task {
     }
 
     @Override
+    public Duration getDuration() {
+        long minutes = 0;
+        if (!this.subTasks.isEmpty()) {
+            minutes = this.subTasks
+                    .stream()
+                    .filter(subTask -> subTask.getDuration() != null)
+                    .reduce(0L, (aLong, subTask) -> aLong + subTask.getDuration().toMinutes(), Long::sum);
+        }
+        Duration duration = Duration.ofMinutes(minutes);
+        this.setDuration(duration);
+        return duration;
+    }
+
+    @Override
+    public Instant getStartTime() {
+        if (!this.subTasks.isEmpty()) {
+            Instant startTime = this.subTasks.get(0).getStartTime();
+            this.setStartTime(startTime);
+            return startTime;
+        }
+        return null;
+    }
+
+    @Override
+    public Instant getEndTime() {
+        if (!this.subTasks.isEmpty()) {
+            return this.subTasks.get(this.subTasks.size() - 1).getEndTime();
+        }
+        return null;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        if (!super.equals(o)) return false;
+        Epic epic = (Epic) o;
+        return Objects.equals(subTasks, epic.subTasks);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(super.hashCode(), subTasks);
+    }
+
+    @Override
     public String toString() {
-        return String.format("%s,%s,%s,%s,%s", getId(), TaskType.EPIC, getName(), getStatus(), getDescription());
+        String duration = getDuration().toMinutes() == 0 ? "null" : getDuration().toMinutes() + "";
+        String startTime = getStartTime() != null ? getStartTime().toString() : "null";
+        return String.format("%s,%s,%s,%s,%s,%s,%s", getId(), TaskType.EPIC, getName(), getStatus(), getDescription(), duration, startTime);
     }
 }
