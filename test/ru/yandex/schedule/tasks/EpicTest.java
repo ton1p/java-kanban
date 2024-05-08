@@ -18,7 +18,9 @@ class EpicTest {
     @BeforeEach
     void beforeEach() {
         this.epic = new Epic("test", "test");
+        this.epic.setId(1);
         this.subTask = new SubTask("test", "test", Status.NEW, epic.getId());
+        this.subTask.setId(2);
     }
 
     @AfterEach

@@ -8,6 +8,7 @@ import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 
 public class Epic extends Task {
     private final List<SubTask> subTasks;
@@ -30,11 +31,15 @@ public class Epic extends Task {
     }
 
     public boolean updateSubTask(SubTask subTask) {
-        int index = this.subTasks.indexOf(subTask);
-        if (index != -1) {
-            this.subTasks.set(index, subTask);
-            this.setStatus(this.computeStatus());
-            return true;
+        Optional<SubTask> subTaskFounded = this.subTasks.stream().filter(s -> s.getId() == subTask.getId()).findFirst();
+        if (subTaskFounded.isPresent()) {
+            int index = this.subTasks.indexOf(subTaskFounded.get());
+            if (index != -1) {
+                this.subTasks.set(index, subTask);
+                this.setStatus(this.computeStatus());
+                return true;
+            }
+            return false;
         }
         return false;
     }

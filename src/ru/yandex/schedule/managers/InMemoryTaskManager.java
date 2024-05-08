@@ -1,5 +1,6 @@
 package ru.yandex.schedule.managers;
 
+import ru.yandex.schedule.managers.exceptions.NotFoundException;
 import ru.yandex.schedule.managers.exceptions.OverlapException;
 import ru.yandex.schedule.managers.interfaces.HistoryManager;
 import ru.yandex.schedule.managers.interfaces.TaskManager;
@@ -38,21 +39,23 @@ public class InMemoryTaskManager implements TaskManager {
     }
 
     private void addToSorted(Task task) throws OverlapException {
-        boolean isTaskOverlap = this.sortedTasks.stream().anyMatch(t -> isTasksOverlap(task, t));
-
-        if (isTaskOverlap) {
-            throw new OverlapException("Задача пересекается по времени.");
-        }
-
-        Optional<Task> existsTask = this.getPrioritizedTasks()
+        Optional<Task> existsTask = this.sortedTasks
                 .stream()
                 .filter(t -> t.getId() == task.getId())
                 .findFirst();
 
-        existsTask.ifPresentOrElse(t -> {
-            this.sortedTasks.remove(t);
+        if (existsTask.isPresent()) {
+            this.sortedTasks.remove(existsTask.get());
             this.sortedTasks.add(task);
-        }, () -> this.sortedTasks.add(task));
+        } else {
+            boolean isTaskOverlap = this.sortedTasks.stream().anyMatch(t -> isTasksOverlap(task, t));
+
+            if (isTaskOverlap) {
+                throw new OverlapException("Задача пересекается по времени.");
+            }
+
+            this.sortedTasks.add(task);
+        }
     }
 
     private void removeFromSorted(Task task) {
@@ -80,17 +83,17 @@ public class InMemoryTaskManager implements TaskManager {
     public void removeAllTaskByType(TaskType taskType) {
         switch (taskType) {
             case TASK: {
-                this.taskHashMap.forEach((id, task) -> {
-                    this.historyManager.remove(id);
+                this.taskHashMap.forEach((taskId, task) -> {
+                    this.historyManager.remove(taskId);
                     removeFromSorted(task);
                 });
                 this.taskHashMap.clear();
                 break;
             }
             case EPIC: {
-                this.epicHashMap.forEach((id, epic) -> this.historyManager.remove(id));
-                this.subTaskHashMap.forEach((id, subTask) -> {
-                    this.historyManager.remove(id);
+                this.epicHashMap.forEach((epicId, epic) -> this.historyManager.remove(epicId));
+                this.subTaskHashMap.forEach((subTaskId, subTask) -> {
+                    this.historyManager.remove(subTaskId);
                     removeFromSorted(subTask);
                 });
                 this.epicHashMap.clear();
@@ -98,8 +101,8 @@ public class InMemoryTaskManager implements TaskManager {
                 break;
             }
             case SUBTASK: {
-                this.subTaskHashMap.forEach((id, subTask) -> {
-                    this.historyManager.remove(id);
+                this.subTaskHashMap.forEach((subTaskId, subTask) -> {
+                    this.historyManager.remove(subTaskId);
                     removeFromSorted(subTask);
                 });
                 this.subTaskHashMap.clear();
@@ -109,34 +112,40 @@ public class InMemoryTaskManager implements TaskManager {
     }
 
     @Override
-    public Task getTaskById(int id) {
+    public Task getTaskById(int id) throws NotFoundException {
         Task task = this.taskHashMap.get(id);
         if (task != null) {
             this.historyManager.add(task);
+        } else {
+            throw new NotFoundException(getNotFoundMessage(id, TaskType.TASK));
         }
         return task;
     }
 
     @Override
-    public Epic getEpicById(int id) {
+    public Epic getEpicById(int id) throws NotFoundException {
         Epic epic = this.epicHashMap.get(id);
         if (epic != null) {
             this.historyManager.add(epic);
+        } else {
+            throw new NotFoundException(getNotFoundMessage(id, TaskType.EPIC));
         }
         return epic;
     }
 
     @Override
-    public SubTask getSubTaskById(int id) {
+    public SubTask getSubTaskById(int id) throws NotFoundException {
         SubTask subTask = this.subTaskHashMap.get(id);
         if (subTask != null) {
             this.historyManager.add(subTask);
+        } else {
+            throw new NotFoundException(getNotFoundMessage(id, TaskType.SUBTASK));
         }
         return subTask;
     }
 
     @Override
-    public void addTask(Task task) {
+    public void addTask(Task task) throws OverlapException {
         if (task != null) {
             task.setId(++id);
             if (task.getStartTime() != null && task.getDuration() != null) {
@@ -144,7 +153,8 @@ public class InMemoryTaskManager implements TaskManager {
                     addToSorted(task);
                     this.taskHashMap.put(task.getId(), task);
                 } catch (OverlapException e) {
-                    System.out.println(e.getMessage());
+                    this.id--;
+                    throw new OverlapException(e.getMessage());
                 }
             } else {
                 this.taskHashMap.put(task.getId(), task);
@@ -161,59 +171,63 @@ public class InMemoryTaskManager implements TaskManager {
     }
 
     @Override
-    public void addSubTask(SubTask subTask) {
+    public void addSubTask(SubTask subTask) throws OverlapException, NotFoundException {
         if (subTask != null) {
             subTask.setId(++id);
-            if (subTask.getStartTime() != null && subTask.getDuration() != null) {
-                try {
-                    Epic epic = this.epicHashMap.get(subTask.getEpicId());
-                    if (epic != null) {
+            int epicId = subTask.getEpicId();
+            Epic epic = this.epicHashMap.get(epicId);
+            if (epic != null) {
+                if (subTask.getStartTime() != null && subTask.getDuration() != null) {
+                    try {
                         addToSorted(subTask);
                         epic.addSubTask(subTask);
                         this.subTaskHashMap.put(subTask.getId(), subTask);
+                    } catch (OverlapException e) {
+                        this.id--;
+                        throw new OverlapException(e.getMessage());
                     }
-                } catch (OverlapException e) {
-                    System.out.println(e.getMessage());
-                }
-            } else {
-                Epic epic = this.epicHashMap.get(subTask.getEpicId());
-                if (epic != null) {
+                } else {
                     epic.addSubTask(subTask);
                     this.subTaskHashMap.put(subTask.getId(), subTask);
                 }
+            } else {
+                this.id--;
+                throw new NotFoundException(getNotFoundMessage(epicId, TaskType.EPIC));
             }
         }
     }
 
     @Override
-    public void updateTask(Task task) {
+    public void updateTask(Task task) throws OverlapException, NotFoundException {
         if (this.taskHashMap.containsKey(task.getId())) {
             if (task.getStartTime() != null && task.getDuration() != null) {
-                try {
-                    addToSorted(task);
-                    this.taskHashMap.put(task.getId(), task);
-                } catch (OverlapException e) {
-                    System.out.println(e.getMessage());
-                }
+                addToSorted(task);
+                this.taskHashMap.put(task.getId(), task);
             } else {
                 this.taskHashMap.put(task.getId(), task);
             }
+        } else {
+            throw new NotFoundException(getNotFoundMessage(task.getId(), TaskType.TASK));
         }
     }
 
     @Override
-    public void updateEpic(Epic epic) {
-        Epic epicFound = this.epicHashMap.get(epic.getId());
+    public void updateEpic(Epic epic) throws NotFoundException {
+        int epicId = epic.getId();
+        Epic epicFound = this.epicHashMap.get(epicId);
         if (epicFound != null) {
             epicFound.setName(epic.getName());
             epicFound.setDescription(epicFound.getDescription());
-            this.epicHashMap.put(epicFound.getId(), epicFound);
+            this.epicHashMap.put(epicId, epicFound);
+        } else {
+            throw new NotFoundException(getNotFoundMessage(epicId, TaskType.EPIC));
         }
     }
 
     @Override
-    public void updateSubTask(SubTask subTask) {
-        Epic epic = this.epicHashMap.get(subTask.getEpicId());
+    public void updateSubTask(SubTask subTask) throws NotFoundException {
+        int epicId = subTask.getEpicId();
+        Epic epic = this.epicHashMap.get(epicId);
         if (epic != null && (this.subTaskHashMap.containsKey(subTask.getId()))) {
             if (subTask.getStartTime() != null && subTask.getDuration() != null) {
                 try {
@@ -228,18 +242,23 @@ public class InMemoryTaskManager implements TaskManager {
                 this.subTaskHashMap.put(subTask.getId(), subTask);
             }
 
+        } else {
+            throw new NotFoundException(getNotFoundMessage(epicId, TaskType.EPIC));
         }
     }
 
     @Override
-    public void removeTask(int id) {
+    public void removeTask(int id) throws NotFoundException {
         Task task = this.taskHashMap.remove(id);
+        if (task == null) {
+            throw new NotFoundException("Задача с id " + id + " не найдена");
+        }
         this.historyManager.remove(id);
         removeFromSorted(task);
     }
 
     @Override
-    public void removeEpic(int id) {
+    public void removeEpic(int id) throws NotFoundException {
         Epic epic = this.epicHashMap.get(id);
         if (epic != null) {
             epic.getSubTasks().forEach(s -> {
@@ -250,26 +269,38 @@ public class InMemoryTaskManager implements TaskManager {
             epic.clearSubTasks();
             this.epicHashMap.remove(id);
             this.historyManager.remove(id);
+        } else {
+            throw new NotFoundException(getNotFoundMessage(id, TaskType.EPIC));
         }
     }
 
     @Override
-    public void removeSubTask(int id) {
+    public void removeSubTask(int id) throws NotFoundException {
         SubTask subTask = this.subTaskHashMap.get(id);
         if (subTask != null) {
-            Epic epic = this.epicHashMap.get(subTask.getEpicId());
+            int epicId = subTask.getEpicId();
+            Epic epic = this.epicHashMap.get(epicId);
             if (epic != null) {
                 epic.removeSubTask(subTask);
+            } else {
+                throw new NotFoundException(getNotFoundMessage(epicId, TaskType.SUBTASK));
             }
             this.subTaskHashMap.remove(id);
             this.historyManager.remove(id);
             removeFromSorted(subTask);
+        } else {
+            throw new NotFoundException(getNotFoundMessage(id, TaskType.SUBTASK));
         }
     }
 
     @Override
-    public List<SubTask> getEpicSubTasks(int epicId) {
-        return this.epicHashMap.get(epicId).getSubTasks();
+    public List<SubTask> getEpicSubTasks(int epicId) throws NotFoundException {
+        Epic epic = this.epicHashMap.get(epicId);
+        if (epic != null) {
+            return epic.getSubTasks();
+        } else {
+            throw new NotFoundException(getNotFoundMessage(epicId, TaskType.EPIC));
+        }
     }
 
     @Override
@@ -302,5 +333,16 @@ public class InMemoryTaskManager implements TaskManager {
         }
 
         return aEndTime.isAfter(bStartTime);
+    }
+
+    private String getNotFoundMessage(int id, TaskType taskType) {
+        String type = switch (taskType) {
+            case TASK -> "Задача";
+            case SUBTASK -> "Подзадача";
+            case EPIC -> "Эпик";
+        };
+
+        String result = type + " с id " + id + " не найдена";
+        return result.substring(0, taskType.equals(TaskType.EPIC) ? result.length() - 1 : result.length());
     }
 }

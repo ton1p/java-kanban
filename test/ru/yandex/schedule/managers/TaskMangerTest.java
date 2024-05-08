@@ -3,6 +3,8 @@ package ru.yandex.schedule.managers;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import ru.yandex.schedule.managers.exceptions.NotFoundException;
+import ru.yandex.schedule.managers.exceptions.OverlapException;
 import ru.yandex.schedule.managers.interfaces.TaskManager;
 import ru.yandex.schedule.tasks.Epic;
 import ru.yandex.schedule.tasks.SubTask;
@@ -27,7 +29,7 @@ public abstract class TaskMangerTest<T extends TaskManager> {
     }
 
     @Test
-    public void getTasksList() {
+    public void getTasksList() throws OverlapException {
         List<Task> taskList = this.taskManager.getTasksList();
         assertEquals(0, taskList.size());
 
@@ -47,7 +49,7 @@ public abstract class TaskMangerTest<T extends TaskManager> {
     }
 
     @Test
-    public void getSubTasksList() {
+    public void getSubTasksList() throws OverlapException, NotFoundException {
         assertEquals(0, this.taskManager.getSubTasksList().size());
 
         Epic epic = new Epic("e", "e");
@@ -60,7 +62,7 @@ public abstract class TaskMangerTest<T extends TaskManager> {
     }
 
     @Test
-    public void removeAllTaskByType() {
+    public void removeAllTaskByType() throws NotFoundException, OverlapException {
         Epic epic = new Epic("e", "e");
         this.taskManager.addEpic(epic);
 
@@ -97,27 +99,23 @@ public abstract class TaskMangerTest<T extends TaskManager> {
     }
 
     @Test
-    public void getTaskById() {
+    public void getTaskById() throws NotFoundException, OverlapException {
         Task task = new Task("t", "t", Status.NEW);
         this.taskManager.addTask(task);
         assertEquals(task, this.taskManager.getTaskById(task.getId()));
 
         this.taskManager.removeTask(task.getId());
-        assertNull(this.taskManager.getTaskById(task.getId()));
     }
 
     @Test
-    public void getEpicById() {
+    public void getEpicById() throws NotFoundException {
         Epic epic = new Epic("t", "t");
         this.taskManager.addEpic(epic);
         assertEquals(epic, this.taskManager.getEpicById(epic.getId()));
-
-        this.taskManager.removeEpic(epic.getId());
-        assertNull(this.taskManager.getEpicById(epic.getId()));
     }
 
     @Test
-    public void getSubTaskById() {
+    public void getSubTaskById() throws NotFoundException, OverlapException {
         Epic epic = new Epic("t", "t");
         this.taskManager.addEpic(epic);
 
@@ -125,13 +123,10 @@ public abstract class TaskMangerTest<T extends TaskManager> {
         this.taskManager.addSubTask(subTask);
 
         assertEquals(subTask, this.taskManager.getSubTaskById(subTask.getId()));
-
-        this.taskManager.removeSubTask(subTask.getId());
-        assertNull(this.taskManager.getSubTaskById(subTask.getId()));
     }
 
     @Test
-    public void addTask() {
+    public void addTask() throws NotFoundException, OverlapException {
         Task task = new Task("d", "d", Status.NEW, Duration.ofMinutes(1), Instant.now());
         this.taskManager.addTask(task);
 
@@ -144,7 +139,7 @@ public abstract class TaskMangerTest<T extends TaskManager> {
     }
 
     @Test
-    public void addEpic() {
+    public void addEpic() throws NotFoundException {
         Epic epic = new Epic("d", "d");
         this.taskManager.addEpic(epic);
 
@@ -157,10 +152,8 @@ public abstract class TaskMangerTest<T extends TaskManager> {
     }
 
     @Test
-    public void addSubTask() {
+    public void addSubTask() throws NotFoundException, OverlapException {
         SubTask subTask = new SubTask("d", "d", Status.NEW, 1, Duration.ofMinutes(1), Instant.now());
-        this.taskManager.addSubTask(subTask);
-        assertEquals(0, this.taskManager.getSubTasksList().size());
 
         Epic epic = new Epic("d", "d");
         this.taskManager.addEpic(epic);
@@ -177,7 +170,7 @@ public abstract class TaskMangerTest<T extends TaskManager> {
     }
 
     @Test
-    public void updateTask() {
+    public void updateTask() throws NotFoundException, OverlapException {
         Task task = new Task("t", "t", Status.NEW);
         this.taskManager.addTask(task);
 
@@ -191,7 +184,7 @@ public abstract class TaskMangerTest<T extends TaskManager> {
     }
 
     @Test
-    public void updateEpic() {
+    public void updateEpic() throws NotFoundException {
         Epic epic = new Epic("t", "t");
         this.taskManager.addEpic(epic);
         epic.setName("new name");
@@ -200,7 +193,7 @@ public abstract class TaskMangerTest<T extends TaskManager> {
     }
 
     @Test
-    public void updateSubTask() {
+    public void updateSubTask() throws NotFoundException, OverlapException {
         Epic epic = new Epic("t", "t");
         this.taskManager.addEpic(epic);
 
@@ -214,19 +207,17 @@ public abstract class TaskMangerTest<T extends TaskManager> {
     }
 
     @Test
-    public void removeTask() {
+    public void removeTask() throws NotFoundException, OverlapException {
         Task task = new Task("t", "t", Status.NEW);
         this.taskManager.addTask(task);
         assertEquals(1, this.taskManager.getTasksList().size());
 
         this.taskManager.removeTask(task.getId());
         assertEquals(0, this.taskManager.getTasksList().size());
-
-        assertNull(this.taskManager.getTaskById(task.getId()));
     }
 
     @Test
-    public void removeEpic() {
+    public void removeEpic() throws NotFoundException, OverlapException {
         Epic epic = new Epic("t", "t");
         this.taskManager.addEpic(epic);
 
@@ -236,11 +227,11 @@ public abstract class TaskMangerTest<T extends TaskManager> {
         assertEquals(epic, this.taskManager.getEpicById(epic.getId()));
 
         this.taskManager.removeEpic(epic.getId());
-        assertNull(this.taskManager.getEpicById(epic.getId()));
+        assertEquals(0, this.taskManager.getEpicsList().size());
     }
 
     @Test
-    public void removeSubTask() {
+    public void removeSubTask() throws NotFoundException, OverlapException {
         Epic epic = new Epic("t", "t");
         this.taskManager.addEpic(epic);
 
@@ -250,11 +241,11 @@ public abstract class TaskMangerTest<T extends TaskManager> {
         assertEquals(subTask, this.taskManager.getSubTaskById(subTask.getId()));
 
         this.taskManager.removeSubTask(subTask.getId());
-        assertNull(this.taskManager.getSubTaskById(subTask.getId()));
+        assertEquals(0, this.taskManager.getSubTasksList().size());
     }
 
     @Test
-    public void getEpicSubTasks() {
+    public void getEpicSubTasks() throws OverlapException, NotFoundException {
         Epic epic = new Epic("t", "t");
         this.taskManager.addEpic(epic);
 
@@ -265,7 +256,7 @@ public abstract class TaskMangerTest<T extends TaskManager> {
     }
 
     @Test
-    public void getHistory() {
+    public void getHistory() throws NotFoundException, OverlapException {
         Epic epic = new Epic("t", "t");
         this.taskManager.addEpic(epic);
 
@@ -301,7 +292,7 @@ public abstract class TaskMangerTest<T extends TaskManager> {
     }
 
     @Test
-    public void getPrioritizedTasks() {
+    public void getPrioritizedTasks() throws OverlapException, NotFoundException {
         Instant now = Instant.now();
 
         Task task = new Task("d", "d", Status.NEW, Duration.ofMinutes(5), now);

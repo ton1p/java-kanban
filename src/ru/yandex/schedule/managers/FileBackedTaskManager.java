@@ -1,6 +1,8 @@
 package ru.yandex.schedule.managers;
 
 import ru.yandex.schedule.managers.exceptions.ManagerSaveException;
+import ru.yandex.schedule.managers.exceptions.NotFoundException;
+import ru.yandex.schedule.managers.exceptions.OverlapException;
 import ru.yandex.schedule.managers.interfaces.HistoryManager;
 import ru.yandex.schedule.tasks.Epic;
 import ru.yandex.schedule.tasks.SubTask;
@@ -30,7 +32,7 @@ public class FileBackedTaskManager extends InMemoryTaskManager {
         this.file = file;
     }
 
-    public static void main(String[] args) {
+    public static void main(String[] args) throws NotFoundException, OverlapException {
         File file1 = new File("src/resources/tasks.csv");
         FileBackedTaskManager fileBackedTaskManager = new FileBackedTaskManager(file1);
 
@@ -50,7 +52,7 @@ public class FileBackedTaskManager extends InMemoryTaskManager {
     }
 
     @Override
-    public void addTask(Task task) {
+    public void addTask(Task task) throws OverlapException {
         super.addTask(task);
         save();
     }
@@ -62,64 +64,64 @@ public class FileBackedTaskManager extends InMemoryTaskManager {
     }
 
     @Override
-    public void addSubTask(SubTask subTask) {
+    public void addSubTask(SubTask subTask) throws OverlapException, NotFoundException {
         super.addSubTask(subTask);
         save();
     }
 
     @Override
-    public Task getTaskById(int id) {
+    public Task getTaskById(int id) throws NotFoundException {
         Task task = super.getTaskById(id);
         save();
         return task;
     }
 
     @Override
-    public Epic getEpicById(int id) {
+    public Epic getEpicById(int id) throws NotFoundException {
         Epic epic = super.getEpicById(id);
         save();
         return epic;
     }
 
     @Override
-    public SubTask getSubTaskById(int id) {
+    public SubTask getSubTaskById(int id) throws NotFoundException {
         SubTask subTask = super.getSubTaskById(id);
         save();
         return subTask;
     }
 
     @Override
-    public void updateTask(Task task) {
+    public void updateTask(Task task) throws OverlapException, NotFoundException {
         super.updateTask(task);
         save();
     }
 
     @Override
-    public void updateEpic(Epic epic) {
+    public void updateEpic(Epic epic) throws NotFoundException {
         super.updateEpic(epic);
         save();
     }
 
     @Override
-    public void updateSubTask(SubTask subTask) {
+    public void updateSubTask(SubTask subTask) throws NotFoundException {
         super.updateSubTask(subTask);
         save();
     }
 
     @Override
-    public void removeTask(int id) {
+    public void removeTask(int id) throws NotFoundException {
         super.removeTask(id);
         save();
     }
 
     @Override
-    public void removeEpic(int id) {
+    public void removeEpic(int id) throws NotFoundException {
         super.removeEpic(id);
         save();
     }
 
     @Override
-    public void removeSubTask(int id) {
+    public void removeSubTask(int id) throws NotFoundException {
         super.removeSubTask(id);
         save();
     }
