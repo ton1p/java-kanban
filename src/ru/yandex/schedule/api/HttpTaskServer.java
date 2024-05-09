@@ -4,8 +4,8 @@ import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.sun.net.httpserver.HttpServer;
 import ru.yandex.schedule.api.controllers.*;
-import ru.yandex.schedule.api.typeAdapters.DurationAdapter;
-import ru.yandex.schedule.api.typeAdapters.InstantAdapter;
+import ru.yandex.schedule.api.type_adapters.DurationAdapter;
+import ru.yandex.schedule.api.type_adapters.InstantAdapter;
 import ru.yandex.schedule.managers.Managers;
 import ru.yandex.schedule.managers.interfaces.TaskManager;
 
@@ -23,7 +23,7 @@ public class HttpTaskServer {
 
     public HttpTaskServer(TaskManager manager) {
         this.manager = manager;
-        this.gson = new GsonBuilder()
+        gson = new GsonBuilder()
                 .registerTypeAdapter(Duration.class, new DurationAdapter())
                 .registerTypeAdapter(Instant.class, new InstantAdapter())
                 .serializeNulls()
@@ -42,13 +42,13 @@ public class HttpTaskServer {
 
     public void start() {
         try {
-            this.server = HttpServer.create(new InetSocketAddress(8080), 0);
-            this.server.createContext("/tasks", new TaskController(this.manager, this.gson));
-            this.server.createContext("/subtasks", new SubTaskController(this.manager, this.gson));
-            this.server.createContext("/epics", new EpicController(this.manager, this.gson));
-            this.server.createContext("/history", new HistoryController(this.manager, this.gson));
-            this.server.createContext("/prioritized", new PrioritizedController(this.manager, this.gson));
-            this.server.start();
+            server = HttpServer.create(new InetSocketAddress(8080), 0);
+            server.createContext("/tasks", new TaskController(manager, gson));
+            server.createContext("/subtasks", new SubTaskController(manager, gson));
+            server.createContext("/epics", new EpicController(manager, gson));
+            server.createContext("/history", new HistoryController(manager, gson));
+            server.createContext("/prioritized", new PrioritizedController(manager, gson));
+            server.start();
         } catch (IOException e) {
             System.out.println("Ошибка при запуске сервера.");
             e.printStackTrace();
@@ -56,10 +56,10 @@ public class HttpTaskServer {
     }
 
     public void stop() {
-        this.server.stop(1);
+        server.stop(1);
     }
 
     public int getPort() {
-        return this.server.getAddress().getPort();
+        return server.getAddress().getPort();
     }
 }

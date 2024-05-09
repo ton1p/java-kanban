@@ -85,4 +85,21 @@ public abstract class BaseController implements HttpHandler {
 
         exchange.close();
     }
+
+
+    protected boolean strIsId(String target) {
+        return target.matches("\\d+");
+    }
+
+    protected boolean strIsTasks(String target) {
+        return target.equals("tasks");
+    }
+
+    protected boolean strIsSubTasks(String target) {
+        return target.equals("subtasks");
+    }
+
+    protected boolean strIsEpics(String target) {
+        return target.equals("epics");
+    }
 }

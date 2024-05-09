@@ -1,8 +1,6 @@
 package ru.yandex.schedule.managers;
 
 import ru.yandex.schedule.managers.exceptions.ManagerSaveException;
-import ru.yandex.schedule.managers.exceptions.NotFoundException;
-import ru.yandex.schedule.managers.exceptions.OverlapException;
 import ru.yandex.schedule.managers.interfaces.HistoryManager;
 import ru.yandex.schedule.tasks.Epic;
 import ru.yandex.schedule.tasks.SubTask;
@@ -10,18 +8,12 @@ import ru.yandex.schedule.tasks.Task;
 import ru.yandex.schedule.tasks.enums.Status;
 import ru.yandex.schedule.tasks.enums.TaskType;
 
-import java.io.BufferedWriter;
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileWriter;
-import java.io.FileReader;
-import java.io.IOException;
+import java.io.*;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
-import java.util.stream.Collectors;
 
 import static ru.yandex.schedule.utils.TaskParser.*;
 
@@ -32,7 +24,7 @@ public class FileBackedTaskManager extends InMemoryTaskManager {
         this.file = file;
     }
 
-    public static void main(String[] args) throws NotFoundException, OverlapException {
+    public static void main(String[] args) {
         File file1 = new File("src/resources/tasks.csv");
         FileBackedTaskManager fileBackedTaskManager = new FileBackedTaskManager(file1);
 
@@ -52,7 +44,7 @@ public class FileBackedTaskManager extends InMemoryTaskManager {
     }
 
     @Override
-    public void addTask(Task task) throws OverlapException {
+    public void addTask(Task task) {
         super.addTask(task);
         save();
     }
@@ -64,64 +56,64 @@ public class FileBackedTaskManager extends InMemoryTaskManager {
     }
 
     @Override
-    public void addSubTask(SubTask subTask) throws OverlapException, NotFoundException {
+    public void addSubTask(SubTask subTask) {
         super.addSubTask(subTask);
         save();
     }
 
     @Override
-    public Task getTaskById(int id) throws NotFoundException {
+    public Task getTaskById(int id) {
         Task task = super.getTaskById(id);
         save();
         return task;
     }
 
     @Override
-    public Epic getEpicById(int id) throws NotFoundException {
+    public Epic getEpicById(int id) {
         Epic epic = super.getEpicById(id);
         save();
         return epic;
     }
 
     @Override
-    public SubTask getSubTaskById(int id) throws NotFoundException {
+    public SubTask getSubTaskById(int id) {
         SubTask subTask = super.getSubTaskById(id);
         save();
         return subTask;
     }
 
     @Override
-    public void updateTask(Task task) throws OverlapException, NotFoundException {
+    public void updateTask(Task task) {
         super.updateTask(task);
         save();
     }
 
     @Override
-    public void updateEpic(Epic epic) throws NotFoundException {
+    public void updateEpic(Epic epic) {
         super.updateEpic(epic);
         save();
     }
 
     @Override
-    public void updateSubTask(SubTask subTask) throws NotFoundException {
+    public void updateSubTask(SubTask subTask) {
         super.updateSubTask(subTask);
         save();
     }
 
     @Override
-    public void removeTask(int id) throws NotFoundException {
+    public void removeTask(int id) {
         super.removeTask(id);
         save();
     }
 
     @Override
-    public void removeEpic(int id) throws NotFoundException {
+    public void removeEpic(int id) {
         super.removeEpic(id);
         save();
     }
 
     @Override
-    public void removeSubTask(int id) throws NotFoundException {
+    public void removeSubTask(int id) {
         super.removeSubTask(id);
         save();
     }
@@ -200,7 +192,7 @@ public class FileBackedTaskManager extends InMemoryTaskManager {
     public static List<Integer> getHistoryIdsFromString(String value) {
         String[] ids = value.split(",");
         try {
-            return Arrays.stream(ids).map(Integer::parseInt).collect(Collectors.toList());
+            return Arrays.stream(ids).map(Integer::parseInt).toList();
         } catch (NumberFormatException e) {
             e.printStackTrace();
         }

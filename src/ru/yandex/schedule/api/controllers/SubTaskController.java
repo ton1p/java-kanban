@@ -30,42 +30,44 @@ public class SubTaskController extends BaseController {
 
         String[] pathParts = path.split("/");
 
-        switch (method) {
-            case "GET": {
-                getHandle(exchange, pathParts);
-                break;
+        try {
+            switch (method) {
+                case "GET": {
+                    getHandle(exchange, pathParts);
+                    break;
+                }
+                case "POST": {
+                    postHandle(exchange, pathParts);
+                    break;
+                }
+                case "DELETE": {
+                    deleteHandler(exchange, pathParts);
+                    break;
+                }
+                default: {
+                    sendNotFoundEndpoint(exchange);
+                }
             }
-            case "POST": {
-                postHandle(exchange, pathParts);
-                break;
-            }
-            case "DELETE": {
-                deleteHandler(exchange, pathParts);
-                break;
-            }
-            default: {
-                sendNotFoundEndpoint(exchange);
-            }
+        } catch (NotFoundException e) {
+            sendNotFound(exchange, e.getMessage());
+        } catch (OverlapException e) {
+            sendHasOverlap(exchange);
         }
     }
 
-    private void getHandle(HttpExchange exchange, String[] pathParts) throws IOException {
+    private void getHandle(HttpExchange exchange, String[] pathParts) throws IOException, NotFoundException {
         if (pathParts.length == 2 && strIsSubTasks(pathParts[1])) {
             List<SubTask> subTaskList = this.taskManager.getSubTasksList();
             sendResponse(exchange, subTaskList);
         } else if (pathParts.length == 3 && strIsSubTasks(pathParts[1]) && strIsId(pathParts[2])) {
             int id = Integer.parseInt(pathParts[2]);
-            try {
-                sendResponse(exchange, this.taskManager.getSubTaskById(id));
-            } catch (NotFoundException e) {
-                sendNotFound(exchange, e.getMessage());
-            }
+            sendResponse(exchange, this.taskManager.getSubTaskById(id));
         } else {
             sendNotFoundEndpoint(exchange);
         }
     }
 
-    private void postHandle(HttpExchange exchange, String[] pathParts) throws IOException {
+    private void postHandle(HttpExchange exchange, String[] pathParts) throws IOException, OverlapException, NotFoundException {
         if (pathParts.length == 2 && strIsSubTasks(pathParts[1])) {
             String body = new String(exchange.getRequestBody().readAllBytes(), StandardCharsets.UTF_8);
             JsonElement jsonElement = JsonParser.parseString(body);
@@ -97,19 +99,13 @@ public class SubTaskController extends BaseController {
                         subTask.setStartTime(startTimeValue);
                     }
 
-                    try {
-                        if (id != null && id.getAsInt() != 0) {
-                            subTask.setId(id.getAsInt());
-                            this.taskManager.updateSubTask(subTask);
-                        } else {
-                            this.taskManager.addSubTask(subTask);
-                        }
-                        sendCreatedStatus(exchange);
-                    } catch (OverlapException e) {
-                        sendHasOverlap(exchange);
-                    } catch (NotFoundException e) {
-                        sendNotFound(exchange, e.getMessage());
+                    if (id != null && id.getAsInt() != 0) {
+                        subTask.setId(id.getAsInt());
+                        this.taskManager.updateSubTask(subTask);
+                    } else {
+                        this.taskManager.addSubTask(subTask);
                     }
+                    sendCreatedStatus(exchange);
                 }
             } else {
                 sendError(exchange, new ErrorResponse(400, "Тело запроса не в формате json"));
@@ -119,25 +115,13 @@ public class SubTaskController extends BaseController {
         }
     }
 
-    private void deleteHandler(HttpExchange exchange, String[] pathParts) throws IOException {
+    private void deleteHandler(HttpExchange exchange, String[] pathParts) throws IOException, NotFoundException {
         if (pathParts.length == 3 && strIsSubTasks(pathParts[1]) && strIsId(pathParts[2])) {
             int id = Integer.parseInt(pathParts[2]);
-            try {
-                this.taskManager.removeSubTask(id);
-                sendSuccessStatus(exchange, "Подзадача удалена");
-            } catch (NotFoundException e) {
-                sendNotFound(exchange, e.getMessage());
-            }
+            this.taskManager.removeSubTask(id);
+            sendSuccessStatus(exchange, "Подзадача удалена");
         } else {
             sendNotFoundEndpoint(exchange);
         }
-    }
-
-    private boolean strIsId(String target) {
-        return target.matches("\\d+");
-    }
-
-    private boolean strIsSubTasks(String target) {
-        return target.equals("subtasks");
     }
 }

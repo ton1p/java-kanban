@@ -1,4 +1,4 @@
-package ru.yandex.schedule.api.typeAdapters;
+package ru.yandex.schedule.api.type_adapters;
 
 import com.google.gson.TypeAdapter;
 import com.google.gson.stream.JsonReader;

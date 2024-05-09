@@ -16,12 +16,8 @@ public class PrioritizedController extends BaseController {
         String method = exchange.getRequestMethod();
         String[] pathParts = exchange.getRequestURI().getPath().split("/");
 
-        if (method.equals("GET")) {
-            if (pathParts.length == 2 && pathParts[1].equals("prioritized")) {
-                sendResponse(exchange, this.taskManager.getPrioritizedTasks());
-            } else {
-                sendNotFoundEndpoint(exchange);
-            }
+        if (method.equals("GET") && pathParts.length == 2 && pathParts[1].equals("prioritized")) {
+            sendResponse(exchange, this.taskManager.getPrioritizedTasks());
         } else {
             sendNotFoundEndpoint(exchange);
         }

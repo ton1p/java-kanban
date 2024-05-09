@@ -17,12 +17,8 @@ public class HistoryController extends BaseController {
         String method = exchange.getRequestMethod();
         String[] pathParts = exchange.getRequestURI().getPath().split("/");
 
-        if (method.equals("GET")) {
-            if (pathParts.length == 2 && pathParts[1].equals("history")) {
-                sendResponse(exchange, this.taskManager.getHistory());
-            } else {
-                sendNotFoundEndpoint(exchange);
-            }
+        if (method.equals("GET") && pathParts.length == 2 && pathParts[1].equals("history")) {
+            sendResponse(exchange, this.taskManager.getHistory());
         } else {
             sendNotFoundEndpoint(exchange);
         }

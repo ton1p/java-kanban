@@ -31,90 +31,85 @@ public class TaskController extends BaseController {
 
         String[] pathParts = path.split("/");
 
-        switch (method) {
-            case "GET": {
-                getHandle(exchange, pathParts);
-                break;
+        try {
+            switch (method) {
+                case "GET": {
+                    getHandle(exchange, pathParts);
+                    break;
+                }
+                case "POST": {
+                    postHandle(exchange, pathParts);
+                    break;
+                }
+                case "DELETE": {
+                    deleteHandler(exchange, pathParts);
+                    break;
+                }
+                default: {
+                    sendNotFoundEndpoint(exchange);
+                }
             }
-            case "POST": {
-                postHandle(exchange, pathParts);
-                break;
-            }
-            case "DELETE": {
-                deleteHandler(exchange, pathParts);
-                break;
-            }
-            default: {
-                sendNotFoundEndpoint(exchange);
-            }
+        } catch (NotFoundException e) {
+            sendNotFound(exchange, e.getMessage());
+        } catch (OverlapException e) {
+            sendHasOverlap(exchange);
         }
     }
 
-    private void getHandle(HttpExchange exchange, String[] pathParts) throws IOException {
+    private void getHandle(HttpExchange exchange, String[] pathParts) throws IOException, NotFoundException {
         if (pathParts.length == 2 && strIsTasks(pathParts[1])) {
             List<Task> taskList = this.taskManager.getTasksList();
             sendResponse(exchange, taskList);
         } else if (pathParts.length == 3 && strIsTasks(pathParts[1]) && strIsId(pathParts[2])) {
             int id = Integer.parseInt(pathParts[2]);
-            try {
-                sendResponse(exchange, this.taskManager.getTaskById(id));
-            } catch (NotFoundException e) {
-                sendNotFound(exchange, e.getMessage());
-            }
+            sendResponse(exchange, this.taskManager.getTaskById(id));
         } else {
             sendNotFoundEndpoint(exchange);
         }
     }
 
-    private void postHandle(HttpExchange exchange, String[] pathParts) throws IOException {
+    private void postHandle(HttpExchange exchange, String[] pathParts) throws IOException, OverlapException, NotFoundException {
         if (pathParts.length == 2 && strIsTasks(pathParts[1])) {
             try (InputStream inputStream = exchange.getRequestBody()) {
                 String body = new String(inputStream.readAllBytes(), StandardCharsets.UTF_8);
                 JsonElement jsonElement = JsonParser.parseString(body);
 
-                if (jsonElement.isJsonObject()) {
-                    JsonObject jsonObject = jsonElement.getAsJsonObject();
-                    JsonElement id = jsonObject.get("id");
-                    JsonElement name = jsonObject.get("name");
-                    JsonElement description = jsonObject.get("description");
-                    JsonElement status = jsonObject.get("status");
-                    JsonElement duration = jsonObject.get("duration");
-                    JsonElement startTime = jsonObject.get("startTime");
-
-                    if (name == null || description == null || status == null) {
-                        sendError(exchange, new ErrorResponse(400, "Не заполнены обязательные поля"));
-                    } else {
-                        String nameValue = name.getAsString();
-                        String descriptionValue = description.getAsString();
-                        Status statusValue = Status.getStatusByString(status.getAsString());
-
-                        Task task = new Task(nameValue, descriptionValue, statusValue);
-
-                        if (duration != null && startTime != null) {
-                            Duration durationValue = Duration.ofMinutes(duration.getAsLong());
-                            Instant startTimeValue = Instant.parse(startTime.getAsString());
-                            task.setDuration(durationValue);
-                            task.setStartTime(startTimeValue);
-                        }
-
-                        try {
-                            if (id != null && id.getAsInt() != 0) {
-                                task.setId(id.getAsInt());
-                                try {
-                                    this.taskManager.updateTask(task);
-                                } catch (NotFoundException e) {
-                                    sendNotFound(exchange, e.getMessage());
-                                }
-                            } else {
-                                this.taskManager.addTask(task);
-                            }
-                            sendCreatedStatus(exchange);
-                        } catch (OverlapException e) {
-                            sendHasOverlap(exchange);
-                        }
-                    }
-                } else {
+                if (!jsonElement.isJsonObject()) {
                     sendError(exchange, new ErrorResponse(400, "Тело запроса не в формате json"));
+                    return;
+                }
+
+                JsonObject jsonObject = jsonElement.getAsJsonObject();
+                JsonElement id = jsonObject.get("id");
+                JsonElement name = jsonObject.get("name");
+                JsonElement description = jsonObject.get("description");
+                JsonElement status = jsonObject.get("status");
+                JsonElement duration = jsonObject.get("duration");
+                JsonElement startTime = jsonObject.get("startTime");
+
+                if (name == null || description == null || status == null) {
+                    sendError(exchange, new ErrorResponse(400, "Не заполнены обязательные поля"));
+                } else {
+                    String nameValue = name.getAsString();
+                    String descriptionValue = description.getAsString();
+                    Status statusValue = Status.getStatusByString(status.getAsString());
+
+                    Task task = new Task(nameValue, descriptionValue, statusValue);
+
+                    if (duration != null && startTime != null) {
+                        Duration durationValue = Duration.ofMinutes(duration.getAsLong());
+                        Instant startTimeValue = Instant.parse(startTime.getAsString());
+                        task.setDuration(durationValue);
+                        task.setStartTime(startTimeValue);
+                    }
+
+                    if (id != null && id.getAsInt() != 0) {
+                        task.setId(id.getAsInt());
+                        this.taskManager.updateTask(task);
+                    } else {
+                        this.taskManager.addTask(task);
+                    }
+                    sendCreatedStatus(exchange);
                 }
             }
         } else {
@@ -122,25 +117,13 @@ public class TaskController extends BaseController {
         }
     }
 
-    private void deleteHandler(HttpExchange exchange, String[] pathParts) throws IOException {
+    private void deleteHandler(HttpExchange exchange, String[] pathParts) throws IOException, NotFoundException {
         if (pathParts.length == 3 && strIsTasks(pathParts[1]) && strIsId(pathParts[2])) {
             int id = Integer.parseInt(pathParts[2]);
-            try {
-                this.taskManager.removeTask(id);
-                sendSuccessStatus(exchange, "Задача удалена");
-            } catch (NotFoundException e) {
-                sendNotFound(exchange, e.getMessage());
-            }
+            this.taskManager.removeTask(id);
+            sendSuccessStatus(exchange, "Задача удалена");
         } else {
             sendNotFoundEndpoint(exchange);
         }
-    }
-
-    private boolean strIsId(String target) {
-        return target.matches("\\d+");
-    }
-
-    private boolean strIsTasks(String target) {
-        return target.equals("tasks");
     }
 }

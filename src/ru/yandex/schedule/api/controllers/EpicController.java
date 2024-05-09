@@ -26,36 +26,36 @@ public class EpicController extends BaseController {
 
         String[] pathParts = path.split("/");
 
-        switch (method) {
-            case "GET": {
-                getHandle(exchange, pathParts);
-                break;
+        try {
+            switch (method) {
+                case "GET": {
+                    getHandle(exchange, pathParts);
+                    break;
+                }
+                case "POST": {
+                    postHandle(exchange, pathParts);
+                    break;
+                }
+                case "DELETE": {
+                    deleteHandler(exchange, pathParts);
+                    break;
+                }
+                default: {
+                    sendNotFoundEndpoint(exchange);
+                }
             }
-            case "POST": {
-                postHandle(exchange, pathParts);
-                break;
-            }
-            case "DELETE": {
-                deleteHandler(exchange, pathParts);
-                break;
-            }
-            default: {
-                sendNotFoundEndpoint(exchange);
-            }
+        } catch (NotFoundException e) {
+            sendNotFound(exchange, e.getMessage());
         }
     }
 
-    private void getHandle(HttpExchange exchange, String[] pathParts) throws IOException {
+    private void getHandle(HttpExchange exchange, String[] pathParts) throws IOException, NotFoundException {
         if (pathParts.length == 2 && strIsEpics(pathParts[1])) {
             List<Epic> epicsList = this.taskManager.getEpicsList();
             sendResponse(exchange, epicsList);
         } else if (pathParts.length == 3 && strIsEpics(pathParts[1]) && strIsId(pathParts[2])) {
             int id = Integer.parseInt(pathParts[2]);
-            try {
-                sendResponse(exchange, this.taskManager.getEpicById(id));
-            } catch (NotFoundException e) {
-                sendNotFound(exchange, e.getMessage());
-            }
+            sendResponse(exchange, this.taskManager.getEpicById(id));
         } else if (
                 pathParts.length == 4 &&
                         strIsEpics(pathParts[1]) &&
@@ -63,17 +63,13 @@ public class EpicController extends BaseController {
                         pathParts[3].equals("subtasks")
         ) {
             int epicId = Integer.parseInt(pathParts[2]);
-            try {
-                sendResponse(exchange, this.taskManager.getEpicSubTasks(epicId));
-            } catch (NotFoundException e) {
-                sendNotFound(exchange, e.getMessage());
-            }
+            sendResponse(exchange, this.taskManager.getEpicSubTasks(epicId));
         } else {
             sendNotFoundEndpoint(exchange);
         }
     }
 
-    private void postHandle(HttpExchange exchange, String[] pathParts) throws IOException {
+    private void postHandle(HttpExchange exchange, String[] pathParts) throws IOException, NotFoundException {
         if (pathParts.length == 2 && strIsEpics(pathParts[1])) {
             String body = new String(exchange.getRequestBody().readAllBytes(), StandardCharsets.UTF_8);
             JsonElement jsonElement = JsonParser.parseString(body);
@@ -93,17 +89,13 @@ public class EpicController extends BaseController {
 
                     Epic epic = new Epic(nameValue, descriptionValue);
 
-                    try {
-                        if (id != null && id.getAsInt() != 0) {
-                            epic.setId(id.getAsInt());
-                            this.taskManager.updateEpic(epic);
-                        } else {
-                            this.taskManager.addEpic(epic);
-                        }
-                        sendCreatedStatus(exchange);
-                    } catch (NotFoundException e) {
-                        sendNotFound(exchange, e.getMessage());
+                    if (id != null && id.getAsInt() != 0) {
+                        epic.setId(id.getAsInt());
+                        this.taskManager.updateEpic(epic);
+                    } else {
+                        this.taskManager.addEpic(epic);
                     }
+                    sendCreatedStatus(exchange);
                 }
             } else {
                 sendError(exchange, new ErrorResponse(400, "Тело запроса не в формате json"));
@@ -113,25 +105,13 @@ public class EpicController extends BaseController {
         }
     }
 
-    private void deleteHandler(HttpExchange exchange, String[] pathParts) throws IOException {
+    private void deleteHandler(HttpExchange exchange, String[] pathParts) throws IOException, NotFoundException {
         if (pathParts.length == 3 && strIsEpics(pathParts[1]) && strIsId(pathParts[2])) {
             int id = Integer.parseInt(pathParts[2]);
-            try {
-                this.taskManager.removeEpic(id);
-                sendSuccessStatus(exchange, "Эпик удален");
-            } catch (NotFoundException e) {
-                sendNotFound(exchange, e.getMessage());
-            }
+            this.taskManager.removeEpic(id);
+            sendSuccessStatus(exchange, "Эпик удален");
         } else {
             sendNotFoundEndpoint(exchange);
         }
-    }
-
-    private boolean strIsId(String target) {
-        return target.matches("\\d+");
-    }
-
-    private boolean strIsEpics(String target) {
-        return target.equals("epics");
     }
 }
