@@ -8,18 +8,12 @@ import ru.yandex.schedule.tasks.Task;
 import ru.yandex.schedule.tasks.enums.Status;
 import ru.yandex.schedule.tasks.enums.TaskType;
 
-import java.io.BufferedWriter;
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileWriter;
-import java.io.FileReader;
-import java.io.IOException;
+import java.io.*;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
-import java.util.stream.Collectors;
 
 import static ru.yandex.schedule.utils.TaskParser.*;
 
@@ -198,7 +192,7 @@ public class FileBackedTaskManager extends InMemoryTaskManager {
     public static List<Integer> getHistoryIdsFromString(String value) {
         String[] ids = value.split(",");
         try {
-            return Arrays.stream(ids).map(Integer::parseInt).collect(Collectors.toList());
+            return Arrays.stream(ids).map(Integer::parseInt).toList();
         } catch (NumberFormatException e) {
             e.printStackTrace();
         }

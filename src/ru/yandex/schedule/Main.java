@@ -1,6 +1,8 @@
 package ru.yandex.schedule;
 
 import ru.yandex.schedule.managers.Managers;
+import ru.yandex.schedule.managers.exceptions.NotFoundException;
+import ru.yandex.schedule.managers.exceptions.OverlapException;
 import ru.yandex.schedule.managers.interfaces.TaskManager;
 import ru.yandex.schedule.tasks.Epic;
 import ru.yandex.schedule.tasks.SubTask;
@@ -15,7 +17,7 @@ public class Main {
     static File file = new File("src/resources/tasks.csv");
     private static final TaskManager taskManager = Managers.getDefaultTask(file);
 
-    public static void main(String[] args) {
+    public static void main(String[] args) throws NotFoundException, OverlapException {
         Epic epic = new Epic("e1", "e1");
         taskManager.addEpic(epic);
         for (int i = 0; i < 3; i++) {
@@ -44,7 +46,7 @@ public class Main {
         printAllTasks(taskManager);
     }
 
-    private static void printAllTasks(TaskManager manager) {
+    private static void printAllTasks(TaskManager manager) throws NotFoundException {
         System.out.println("Задачи:");
         for (Task task : manager.getTasksList()) {
             System.out.println(task);

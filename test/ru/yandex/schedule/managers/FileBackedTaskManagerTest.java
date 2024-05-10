@@ -4,6 +4,8 @@ import org.junit.Rule;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.rules.ExpectedException;
+import ru.yandex.schedule.managers.exceptions.NotFoundException;
+import ru.yandex.schedule.managers.exceptions.OverlapException;
 import ru.yandex.schedule.tasks.Epic;
 import ru.yandex.schedule.tasks.SubTask;
 import ru.yandex.schedule.tasks.Task;
@@ -42,7 +44,7 @@ class FileBackedTaskManagerTest extends TaskMangerTest<FileBackedTaskManager> {
     }
 
     @Test
-    void saveToEmptyFile() {
+    void saveToEmptyFile() throws NotFoundException, OverlapException {
         FileBackedTaskManager fileBackedTaskManager = new FileBackedTaskManager(file);
 
         Task task = new Task("name", "desc", Status.NEW);
@@ -105,7 +107,7 @@ class FileBackedTaskManagerTest extends TaskMangerTest<FileBackedTaskManager> {
     }
 
     @Test
-    void updateTasks() {
+    void updateTasks() throws NotFoundException, OverlapException {
         FileBackedTaskManager fileBackedTaskManager = new FileBackedTaskManager(file);
 
         Task task = new Task("name", "desc", Status.NEW);
@@ -161,7 +163,7 @@ class FileBackedTaskManagerTest extends TaskMangerTest<FileBackedTaskManager> {
     }
 
     @Test
-    void removeTasks() {
+    void removeTasks() throws NotFoundException, OverlapException {
         FileBackedTaskManager fileBackedTaskManager = new FileBackedTaskManager(file);
 
         Task task = new Task("name", "desc", Status.NEW);

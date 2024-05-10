@@ -1,5 +1,7 @@
 package ru.yandex.schedule.managers.interfaces;
 
+import ru.yandex.schedule.managers.exceptions.NotFoundException;
+import ru.yandex.schedule.managers.exceptions.OverlapException;
 import ru.yandex.schedule.tasks.Epic;
 import ru.yandex.schedule.tasks.SubTask;
 import ru.yandex.schedule.tasks.Task;
@@ -16,31 +18,31 @@ public interface TaskManager {
 
     void removeAllTaskByType(TaskType taskType);
 
-    Task getTaskById(int id);
+    Task getTaskById(int id) throws NotFoundException;
 
-    Epic getEpicById(int id);
+    Epic getEpicById(int id) throws NotFoundException;
 
-    SubTask getSubTaskById(int id);
+    SubTask getSubTaskById(int id) throws NotFoundException;
 
-    void addTask(Task task);
+    void addTask(Task task) throws OverlapException;
 
     void addEpic(Epic epic);
 
-    void addSubTask(SubTask subTask);
+    void addSubTask(SubTask subTask) throws OverlapException, NotFoundException;
 
-    void updateTask(Task task);
+    void updateTask(Task task) throws OverlapException, NotFoundException;
 
-    void updateEpic(Epic epic);
+    void updateEpic(Epic epic) throws NotFoundException;
 
-    void updateSubTask(SubTask subTask);
+    void updateSubTask(SubTask subTask) throws OverlapException, NotFoundException;
 
-    void removeTask(int id);
+    void removeTask(int id) throws NotFoundException;
 
-    void removeEpic(int id);
+    void removeEpic(int id) throws NotFoundException;
 
-    void removeSubTask(int id);
+    void removeSubTask(int id) throws NotFoundException;
 
-    List<SubTask> getEpicSubTasks(int epicId);
+    List<SubTask> getEpicSubTasks(int epicId) throws NotFoundException;
 
     List<Task> getHistory();
 
